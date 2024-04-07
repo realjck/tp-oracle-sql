@@ -4,8 +4,8 @@
 CREATE TABLE client
 (
     client_uid           VARCHAR2(255),
-    client_id            NUMBER       NOT NULL,
-    client_email         VARCHAR(255) NOT NULL DEFAULT 'anonyme',
+    client_id            NUMBER                         NOT NULL,
+    client_email         VARCHAR(255) DEFAULT 'anonyme' NOT NULL,
     client_name          VARCHAR2(255),
     client_prenom        VARCHAR2(255),
     client_telephone     VARCHAR(255),
@@ -23,9 +23,7 @@ VALUES (seq_id_client.nextval);
 
 -- Ajout clé primaire
 ALTER TABLE client
-    ADD CONSTRAINT client_pk PRIMARY KEY (
-                                          client_uid
-        )
+    ADD CONSTRAINT client_pk PRIMARY KEY (client_uid)
         ENABLE;
 
 --------------------------
@@ -35,6 +33,7 @@ CREATE TABLE commande
 (
     commande_uid     VARCHAR2(255),
     commande_id      NUMBER NOT NULL,
+    client_uid       VARCHAR2(255),
     commande_date    DATE,
     commande_montant NUMBER
 );
@@ -49,6 +48,12 @@ VALUES (seq_id_commande.nextval);
 ALTER TABLE commande
     ADD CONSTRAINT commande_pk PRIMARY KEY (commande_uid)
         ENABLE;
+
+--Creation d'une clé étrangère
+ALTER TABLE commande
+    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
+        REFERENCES client (client_uid)
+            ENABLE;
 
 -------------------------
 -- Creation table produit
@@ -125,11 +130,12 @@ ALTER TABLE fournisseur
 -----------------------
 CREATE TABLE achat
 (
-    achat_uid      VARCHAR2(255),
-    achat_id       NUMBER,
-    achat_date     DATE   NOT NULL,
-    achat_quantité NUMBER NOT NULL,
-    achat_prix     NUMBER
+    achat_uid                  VARCHAR2(255),
+    achat_id                   NUMBER,
+    fournisseur_ingredient_uid VARCHAR2(255),
+    achat_date                 DATE   NOT NULL,
+    achat_quantité             NUMBER NOT NULL,
+    achat_prix                 NUMBER
 );
 
 -- Création sequence
@@ -142,6 +148,12 @@ VALUES (seq_id_achat.nextval);
 ALTER TABLE achat
     ADD CONSTRAINT achat_pk PRIMARY KEY (achat_uid)
         ENABLE;
+
+--Creation d'une clé étrangere
+ALTER TABLE achat
+    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
+        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
+            ENABLE;
 
 -------------------------------------------------------
 -- Création table de jointure entre commande et produit
@@ -223,17 +235,7 @@ ALTER TABLE fournisseur_ingredient
         REFERENCES ingredient (ingredient_uid)
             ENABLE;
 
---Creation d'une clé étrangere
-ALTER TABLE commande
-    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
-        REFERENCES client (client_uid)
-            ENABLE;
 
---Creation d'une clé étrangere
-ALTER TABLE achat
-    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
-        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
-            ENABLE;
 
 -- STATISTIQUES À EXTRAIRE ;
 
