@@ -277,6 +277,8 @@ ALTER TABLE achat
         REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
     ENABLE;
 
+
+-- creation d'une procedure pour afficher d'autres procedures :
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'Test') AS
 BEGIN
     DBMS_OUTPUT.ENABLE;
@@ -368,6 +370,71 @@ END;
 -- Fin objectif 1--
 -------------------
 
+
+-- Création de types d'ingredients viande/legumes/sauces/pain
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom, type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Pain', 1);
+
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom, type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Légume', 2);
+
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom, type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Viande', 3);
+
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom, type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Sauce', 20);
+
+-- création de produits burger et tacos poulet et viande
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger poulet');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger viande');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos poulet');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos viande');
+
+-- création de 20 clients de manière aléatoire (avec nom1/prenom1)
+BEGIN
+FOR i IN 1..20 LOOP
+        DECLARE
+v_cp VARCHAR2(5);
+            v_ville VARCHAR2(50);
+BEGIN
+            -- Choix aléatoire d'un code postal parmi les valeurs spécifiées
+CASE DBMS_RANDOM.VALUE(1, 5)
+                WHEN 1 THEN v_cp := '69001';
+WHEN 2 THEN v_cp := '69002';
+WHEN 3 THEN v_cp := '38780';
+WHEN 4 THEN v_cp := '38200';
+ELSE v_cp := '69003';
+END CASE;
+
+            -- Attribuer la ville en fonction du code postal
+CASE
+                WHEN v_cp LIKE '69%' THEN v_ville := 'Lyon';
+WHEN v_cp = '38200' THEN v_ville := 'Vienne';
+WHEN v_cp = '38780' THEN v_ville := 'Estrablin';
+ELSE v_ville := 'Autre';
+END CASE;
+
+INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone, client_adresse, client_cp, client_ville, client_date_creation)
+VALUES (SYS_GUID(), seq_id_client.nextval, 'client' || seq_id_client.currval || '@example.com', 'Nom' || i, 'Prenom' || i, '06' || LPAD(dbms_random.value(10000000, 99999999), 8, '0'), 'Rue' || i, v_cp, v_ville, SYSDATE);
+EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création du client ' || i || ' : ' || SQLERRM);
+END;
+END LOOP;
+COMMIT;
+DBMS_OUTPUT.PUT_LINE('Les 20 clients ont été créés avec succès.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création des clients : ' || SQLERRM);
+END;
+/
 
 
 
