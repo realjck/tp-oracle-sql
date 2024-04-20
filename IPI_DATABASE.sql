@@ -21,10 +21,18 @@ CREATE SEQUENCE seq_id_client
 INSERT INTO client(client_id)
 VALUES (seq_id_client.nextval);
 
+
 -- Ajout clé primaire
+UPDATE client SET client_uid = 'valeur_par_defaut' WHERE client_uid IS NULL;
 ALTER TABLE client
-    ADD CONSTRAINT client_pk PRIMARY KEY (client_uid)
-        ENABLE;
+    MODIFY (client_uid VARCHAR2(255) NOT NULL);
+ALTER TABLE client
+    ADD CONSTRAINT client_pk PRIMARY KEY
+        (
+         client_uid
+            )
+    ENABLE;
+DELETE FROM client WHERE client_uid = 'valeur_par_defaut';
 
 --------------------------
 -- Creation table commande
@@ -45,15 +53,20 @@ INSERT INTO commande(commande_id)
 VALUES (seq_id_commande.nextval);
 
 -- Ajout clé primaire
+UPDATE commande SET commande_uid = 'valeur_par_defaut' WHERE commande_uid IS NULL;
+ALTER TABLE commande
+    MODIFY (commande_uid NOT NULL);
 ALTER TABLE commande
     ADD CONSTRAINT commande_pk PRIMARY KEY (commande_uid)
-        ENABLE;
+    ENABLE;
+DELETE FROM commande WHERE commande_uid = 'valeur_par_defaut';
 
 --Creation d'une clé étrangère
 ALTER TABLE commande
-    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
+    ADD CONSTRAINT commande_client_fk FOREIGN KEY (commande_uid)
         REFERENCES client (client_uid)
-            ENABLE;
+    ENABLE;
+
 
 -------------------------
 -- Creation table produit
@@ -74,8 +87,7 @@ VALUES (seq_id_produit.nextval);
 -- Ajout clé primaire
 ALTER TABLE produit
     ADD CONSTRAINT produit_pk PRIMARY KEY (produit_uid)
-        ENABLE;
-
+    ENABLE;
 ----------------------------
 -- Creation table ingredient
 ----------------------------
@@ -97,6 +109,41 @@ VALUES (seq_id_ingredient.nextval);
 ALTER TABLE ingredient
     ADD CONSTRAINT ingredient_pk PRIMARY KEY (ingredient_uid)
         ENABLE;
+
+
+
+----------------------------
+-- Creation table type_ingredient
+----------------------------
+CREATE TABLE type_ingredient
+(
+    type_ingredient_uid   VARCHAR2(255),
+    type_ingredient_id    NUMBER        NOT NULL,
+    type_ingredient_nom   VARCHAR2(255) NOT NULL,
+    type_ingredient_duree_peremption NUMBER
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_type_ingredient
+    INCREMENT BY 1;
+INSERT INTO type_ingredient(type_ingredient_id)
+VALUES (seq_id_type_ingredient.nextval);
+
+-- Ajout clé primaire
+ALTER TABLE type_ingredient
+    ADD CONSTRAINT type_ingredient_pk PRIMARY KEY (type_ingredient_uid)
+    ENABLE;
+
+
+
+--Creation d'une clé étrangère entre ingredient et type_ingredient
+ALTER TABLE ingredient
+    ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (ingredient_uid)
+        REFERENCES type_ingredient (type_ingredient_uid)
+    ENABLE;
+
+
+
 
 -----------------------------
 -- Creation table fournisseur
@@ -132,7 +179,6 @@ CREATE TABLE achat
 (
     achat_uid                  VARCHAR2(255),
     achat_id                   NUMBER,
-    fournisseur_ingredient_uid VARCHAR2(255),
     achat_date                 DATE   NOT NULL,
     achat_quantité             NUMBER NOT NULL,
     achat_prix                 NUMBER
@@ -149,11 +195,7 @@ ALTER TABLE achat
     ADD CONSTRAINT achat_pk PRIMARY KEY (achat_uid)
         ENABLE;
 
---Creation d'une clé étrangere
-ALTER TABLE achat
-    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
-        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
-            ENABLE;
+
 
 -------------------------------------------------------
 -- Création table de jointure entre commande et produit
@@ -161,8 +203,6 @@ ALTER TABLE achat
 CREATE TABLE commande_produit
 (
     commande_produit_uid             VARCHAR2(255),
-    commande_uid                     VARCHAR2(255),
-    produit_uid                      VARCHAR2(255),
     commande_produit_quantite_vendue NUMBER
 );
 
@@ -173,12 +213,12 @@ ALTER TABLE commande_produit
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE commande_produit
-    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_uid)
+    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_produit_uid)
         REFERENCES commande (commande_uid)
-            ENABLE;
+    ENABLE;
 
 ALTER TABLE commande_produit
-    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (produit_uid)
+    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (commande_produit_uid)
         REFERENCES produit (produit_uid)
             ENABLE;
 
@@ -188,8 +228,6 @@ ALTER TABLE commande_produit
 CREATE TABLE produit_ingredient
 (
     produit_ingredient_uid               VARCHAR2(255),
-    produit_uid                          VARCHAR2(255),
-    ingredient_uid                       VARCHAR2(255),
     produit_ingredient_quantite_utilisee NUMBER
 );
 
@@ -200,12 +238,12 @@ ALTER TABLE produit_ingredient
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE produit_ingredient
-    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_uid)
+    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_ingredient_uid)
         REFERENCES produit (produit_uid)
             ENABLE;
 
 ALTER TABLE produit_ingredient
-    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (ingredient_uid)
+    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (produit_ingredient_uid)
         REFERENCES ingredient (ingredient_uid)
             ENABLE;
 
@@ -214,9 +252,7 @@ ALTER TABLE produit_ingredient
 -------------------------------------------------------------
 CREATE TABLE fournisseur_ingredient
 (
-    fournisseur_ingredient_uid VARCHAR2(255),
-    fournisseur_uid            VARCHAR2(255),
-    ingredient_uid             VARCHAR2(255)
+    fournisseur_ingredient_uid VARCHAR2(255)
 );
 
 -- Création cléf primaire de la table de jointure
@@ -226,14 +262,112 @@ ALTER TABLE fournisseur_ingredient
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_uid)
+    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
         REFERENCES fournisseur (fournisseur_uid)
             ENABLE;
 
 ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (ingredient_uid)
+    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (fournisseur_ingredient_uid)
         REFERENCES ingredient (ingredient_uid)
             ENABLE;
+
+--Creation d'une clé étrangere entre la table achat et fournisseur_ingredient_uid
+ALTER TABLE achat
+    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (achat_uid)
+        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
+    ENABLE;
+
+CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'Test') AS
+BEGIN
+    DBMS_OUTPUT.ENABLE;
+    DBMS_OUTPUT.ENABLE(1000000);
+    DBMS_OUTPUT.PUT_LINE(i_message);
+END DBMS;
+/
+-- Appel de la procédure
+BEGIN
+    DBMS('mon message');
+END;
+/
+
+-- Affichage d'un message :
+SET SERVEROUTPUT ON;
+DECLARE
+v_message VARCHAR2(100) := 'Bonjour, monde !';
+BEGIN
+    DBMS_OUTPUT.PUT_LINE(v_message);
+END;
+/
+
+
+
+-------------------------------------------------------
+-- obj 1 : Créer des accesseurs (GET/SET) aux tables --
+-- (procédure/fonction pour créer, supprimer, mettre--
+-- à jour, afficher des informations)
+-------------------------------------------------------
+-- Procédure pour insérer un client
+CREATE OR REPLACE PROCEDURE insert_client(
+    i_client_uid           IN VARCHAR2,
+    i_client_id            IN NUMBER DEFAULT NULL,
+    i_client_email         IN VARCHAR2,
+    i_client_name          IN VARCHAR2,
+    i_client_prenom        IN VARCHAR2,
+    i_client_telephone     IN VARCHAR2,
+    i_client_adresse       IN VARCHAR2,
+    i_client_cp            IN VARCHAR2,
+    i_client_ville         IN VARCHAR2,
+    i_client_date_creation IN DATE
+)
+AS
+BEGIN
+
+INSERT INTO client (
+    client_uid,
+    client_id,
+    client_email,
+    client_name,
+    client_prenom,
+    client_telephone,
+    client_adresse,
+    client_cp,
+    client_ville,
+    client_date_creation
+) VALUES (
+        COALESCE(i_client_uid, 'valeur_par_defaut'),
+        i_client_id,
+        i_client_email,
+        i_client_name,
+        i_client_prenom,
+        i_client_telephone,
+        i_client_adresse,
+        i_client_cp,
+        i_client_ville,
+        i_client_date_creation
+         );
+END insert_client;
+/
+
+-- Appel de la procédure
+BEGIN
+    insert_client(
+        i_client_uid => NULL,
+        i_client_id => seq_id_client.nextval,
+        i_client_email => 'client@example.com',
+        i_client_name => 'John',
+        i_client_prenom => 'Doe',
+        i_client_telephone => '0623243546',
+        i_client_adresse => '2 rue ipi',
+        i_client_cp => '38720',
+        i_client_ville => 'Lyon',
+        i_client_date_creation => SYSDATE
+    );
+END;
+/
+-------------------
+-- Fin objectif 1--
+-------------------
+
 
 
 
