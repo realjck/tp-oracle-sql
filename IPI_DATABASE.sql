@@ -1,30 +1,31 @@
 -- Supprimer les tables si elles existent
 BEGIN
-FOR cur_rec IN (SELECT table_name FROM user_tables) LOOP
+    FOR cur_rec IN (SELECT table_name FROM user_tables) LOOP
         IF cur_rec.table_name IS NOT NULL THEN
             EXECUTE IMMEDIATE 'DROP TABLE ' || cur_rec.table_name || ' CASCADE CONSTRAINTS';
-END IF;
-END LOOP;
+        END IF;
+    END LOOP;
 END;
 /
 
 -- Supprimer les séquences si elles existent
 BEGIN
-FOR cur_rec IN (SELECT sequence_name FROM user_sequences) LOOP
-        IF cur_rec.sequence_name IS NOT NULL THEN
-            EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
-END IF;
-END LOOP;
+    FOR cur_rec IN (SELECT sequence_name FROM user_sequences)
+        LOOP
+            IF cur_rec.sequence_name IS NOT NULL THEN
+                EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
+            END IF;
+        END LOOP;
 END;
 /
 
 -- Supprimer les procédures si elles existent
 BEGIN
-FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE') LOOP
+    FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE') LOOP
         IF cur_rec.object_name IS NOT NULL THEN
             EXECUTE IMMEDIATE 'DROP PROCEDURE ' || cur_rec.object_name;
-END IF;
-END LOOP;
+        END IF;
+    END LOOP;
 END;
 /
 
@@ -51,7 +52,7 @@ CREATE TABLE client
 CREATE SEQUENCE seq_id_client
     INCREMENT BY 1;
 INSERT INTO client(client_id)
-VALUES (seq_id_client.nextval);
+    VALUES (seq_id_client.nextval);
 
 
 -- Ajout clé primaire
@@ -146,6 +147,8 @@ UPDATE type_ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_
 ALTER TABLE type_ingredient
     ADD CONSTRAINT type_ingredient_pk PRIMARY KEY (type_ingredient_uid)
     ENABLE;
+
+DELETE FROM type_ingredient WHERE type_ingredient_nom = 'typeIngredientNom';
 
 ----------------------------
 -- Creation table ingredient
@@ -406,7 +409,7 @@ END insert_client;
 -- Appel de la procédure
 BEGIN
     insert_client(
-        i_client_uid => NULL,
+        i_client_uid => SYS_GUID(),
         i_client_id => seq_id_client.nextval,
         i_client_email => 'client@example.com',
         i_client_name => 'John',
