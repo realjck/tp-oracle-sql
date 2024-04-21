@@ -1,3 +1,34 @@
+-- Supprimer les tables si elles existent
+BEGIN
+FOR cur_rec IN (SELECT table_name FROM user_tables) LOOP
+        IF cur_rec.table_name IS NOT NULL THEN
+            EXECUTE IMMEDIATE 'DROP TABLE ' || cur_rec.table_name || ' CASCADE CONSTRAINTS';
+END IF;
+END LOOP;
+END;
+/
+
+-- Supprimer les séquences si elles existent
+BEGIN
+FOR cur_rec IN (SELECT sequence_name FROM user_sequences) LOOP
+        IF cur_rec.sequence_name IS NOT NULL THEN
+            EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
+END IF;
+END LOOP;
+END;
+/
+
+-- Supprimer les procédures si elles existent
+BEGIN
+FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE') LOOP
+        IF cur_rec.object_name IS NOT NULL THEN
+            EXECUTE IMMEDIATE 'DROP PROCEDURE ' || cur_rec.object_name;
+END IF;
+END LOOP;
+END;
+/
+
+
 ------------------------
 -- Creation table client
 ------------------------
@@ -14,6 +45,7 @@ CREATE TABLE client
     client_ville         VARCHAR2(255),
     client_date_creation DATE
 );
+
 
 -- Création sequence
 CREATE SEQUENCE seq_id_client
@@ -63,7 +95,7 @@ DELETE FROM commande WHERE commande_uid = 'valeur_par_defaut';
 
 --Creation d'une clé étrangère
 ALTER TABLE commande
-    ADD CONSTRAINT commande_client_fk FOREIGN KEY (commande_uid)
+    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
         REFERENCES client (client_uid)
     ENABLE;
 
@@ -81,35 +113,13 @@ CREATE TABLE produit
 -- Création sequence
 CREATE SEQUENCE seq_id_produit
     INCREMENT BY 1;
-INSERT INTO produit(produit_id)
-VALUES (seq_id_produit.nextval);
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Nom du produit');
 
 -- Ajout clé primaire
 ALTER TABLE produit
     ADD CONSTRAINT produit_pk PRIMARY KEY (produit_uid)
     ENABLE;
-----------------------------
--- Creation table ingredient
-----------------------------
-CREATE TABLE ingredient
-(
-    ingredient_uid   VARCHAR2(255),
-    ingredient_id    NUMBER        NOT NULL,
-    ingredient_nom   VARCHAR2(255) NOT NULL,
-    ingredient_unite VARCHAR2(255) NOT NULL
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_ingredient
-    INCREMENT BY 1;
-INSERT INTO ingredient(ingredient_id)
-VALUES (seq_id_ingredient.nextval);
-
--- Ajout clé primaire
-ALTER TABLE ingredient
-    ADD CONSTRAINT ingredient_pk PRIMARY KEY (ingredient_uid)
-        ENABLE;
-
 
 
 ----------------------------
@@ -126,19 +136,56 @@ CREATE TABLE type_ingredient
 -- Création sequence
 CREATE SEQUENCE seq_id_type_ingredient
     INCREMENT BY 1;
-INSERT INTO type_ingredient(type_ingredient_id)
-VALUES (seq_id_type_ingredient.nextval);
+INSERT INTO type_ingredient(type_ingredient_id,type_ingredient_nom)
+VALUES (seq_id_type_ingredient.nextval,'typeIngredientNom');
 
 -- Ajout clé primaire
+-- Attribuer une valeur par défaut à la colonne type_ingredient_uid
+UPDATE type_ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
 ALTER TABLE type_ingredient
     ADD CONSTRAINT type_ingredient_pk PRIMARY KEY (type_ingredient_uid)
     ENABLE;
 
+----------------------------
+-- Creation table ingredient
+----------------------------
+CREATE TABLE ingredient
+(
+    type_ingredient_uid VARCHAR2(255),
+    ingredient_uid   VARCHAR2(255),
+    ingredient_id    NUMBER        NOT NULL,
+    ingredient_nom   VARCHAR2(255) NOT NULL,
+    ingredient_unite VARCHAR2(255) NOT NULL
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_ingredient
+    INCREMENT BY 1;
+INSERT INTO ingredient(ingredient_id,ingredient_nom,ingredient_unite)
+VALUES (seq_id_ingredient.nextval, 'nom ingredient', 120);
+
+----------------------
+-- Ajout clé primaire
+-- Vérifier s'il existe des valeurs NULL dans la colonne ingredient_uid
+SELECT COUNT(*) FROM ingredient WHERE ingredient_uid IS NULL;
+
+-- Mettre à jour les valeurs NULL avec des valeurs uniques
+UPDATE ingredient SET ingredient_uid = SYS_GUID() WHERE ingredient_uid IS NULL;
+
+-- Assurez-vous qu'il n'y a plus de valeurs NULL dans la colonne ingredient_uid
+SELECT COUNT(*) FROM ingredient WHERE ingredient_uid IS NULL;
+
+-- Ajouter la contrainte de clé primaire
+ALTER TABLE ingredient MODIFY (ingredient_uid VARCHAR2(255) NOT NULL); -- Si nécessaire
+ALTER TABLE ingredient ADD CONSTRAINT ingredient_pk PRIMARY KEY (ingredient_uid) ENABLE;
+
+
 
 
 --Creation d'une clé étrangère entre ingredient et type_ingredient
+UPDATE ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
 ALTER TABLE ingredient
-    ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (ingredient_uid)
+    ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (type_ingredient_uid)
         REFERENCES type_ingredient (type_ingredient_uid)
     ENABLE;
 
@@ -164,13 +211,21 @@ CREATE TABLE fournisseur
 -- Création sequence
 CREATE SEQUENCE seq_id_fournisseur
     INCREMENT BY 1;
-INSERT INTO fournisseur(fournisseur_id)
-VALUES (seq_id_fournisseur.nextval);
+INSERT INTO fournisseur(fournisseur_id,fournisseur_nom,fournisseur_email,fournisseur_telephone,fournisseur_adresse,fournisseur_cp,fournisseur_ville,fournisseur_date_creation)
+VALUES (seq_id_fournisseur.nextval,'valeur par defaut','valeur@pardeaaut','valeur par defaut','valeur par defaut','valeur par defaut','valeur par defaut',SYSDATE);
 
 -- Ajout clé primaire
+-- Mettre à jour les valeurs NULL dans la colonne fournisseur_uid avec une valeur par défaut
+UPDATE fournisseur SET fournisseur_uid = 'nouvelle_valeur' WHERE fournisseur_uid IS NULL;
+
+-- Une fois que toutes les valeurs NULL sont mises à jour, ajoutez la contrainte de clé primaire
+ALTER TABLE fournisseur
+    MODIFY (fournisseur_uid VARCHAR2(255) NOT NULL); -- Assurez-vous que la colonne n'accepte plus de valeurs NULL
+
 ALTER TABLE fournisseur
     ADD CONSTRAINT fournisseur_pk PRIMARY KEY (fournisseur_uid)
-        ENABLE;
+    ENABLE;
+
 
 -----------------------
 -- Creation table achat
@@ -180,20 +235,31 @@ CREATE TABLE achat
     achat_uid                  VARCHAR2(255),
     achat_id                   NUMBER,
     achat_date                 DATE   NOT NULL,
-    achat_quantité             NUMBER NOT NULL,
-    achat_prix                 NUMBER
+    achat_quantite             NUMBER NOT NULL,
+    achat_prix                 NUMBER,
+    fournisseur_ingredient_uid VARCHAR(255)
 );
 
 -- Création sequence
 CREATE SEQUENCE seq_id_achat
     INCREMENT BY 1;
-INSERT INTO achat(achat_id)
-VALUES (seq_id_achat.nextval);
+INSERT INTO achat(achat_id,achat_date,achat_quantite,achat_prix)
+VALUES (seq_id_achat.nextval,SYSDATE,5,24);
 
 -- Ajout clé primaire
+-- Vérifiez s'il y a des valeurs NULL dans la colonne achat_uid
+SELECT COUNT(*) FROM achat WHERE achat_uid IS NULL;
+
+-- Si le résultat est supérieur à zéro, mettez à jour les valeurs NULL avec des valeurs appropriées ou supprimez les lignes concernées.
+DELETE FROM achat WHERE achat_uid IS NULL;
+-- Une fois que toutes les valeurs NULL sont traitées, ajoutez la contrainte de clé primaire
+ALTER TABLE achat
+    MODIFY (achat_uid VARCHAR2(255) NOT NULL); -- Assurez-vous que la colonne n'accepte plus de valeurs NULL
+
 ALTER TABLE achat
     ADD CONSTRAINT achat_pk PRIMARY KEY (achat_uid)
-        ENABLE;
+    ENABLE;
+
 
 
 
@@ -203,24 +269,26 @@ ALTER TABLE achat
 CREATE TABLE commande_produit
 (
     commande_produit_uid             VARCHAR2(255),
-    commande_produit_quantite_vendue NUMBER
+    commande_produit_quantite_vendue NUMBER,
+    commande_uid                     VARCHAR2(255),
+    produit_uid                      VARCHAR2(255)
 );
 
 -- Création clé primaire de la table de jointure
 ALTER TABLE commande_produit
     ADD CONSTRAINT commande_produit_pk PRIMARY KEY (commande_produit_uid)
-        ENABLE;
+    ENABLE;
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE commande_produit
-    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_produit_uid)
+    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_uid)
         REFERENCES commande (commande_uid)
     ENABLE;
 
 ALTER TABLE commande_produit
-    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (commande_produit_uid)
+    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (produit_uid)
         REFERENCES produit (produit_uid)
-            ENABLE;
+    ENABLE;
 
 ---------------------------------------------------------
 -- Création table de jointure entre produit et ingredient
@@ -228,52 +296,56 @@ ALTER TABLE commande_produit
 CREATE TABLE produit_ingredient
 (
     produit_ingredient_uid               VARCHAR2(255),
-    produit_ingredient_quantite_utilisee NUMBER
+    produit_ingredient_quantite_utilisee NUMBER,
+    produit_uid                          VARCHAR2(255),
+    ingredient_uid                       VARCHAR2(255)
 );
 
 -- Création cléf primaire de la table de jointure
 ALTER TABLE produit_ingredient
     ADD CONSTRAINT produit_ingredient_pk PRIMARY KEY (produit_ingredient_uid)
-        ENABLE;
+    ENABLE;
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE produit_ingredient
-    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_ingredient_uid)
+    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_uid)
         REFERENCES produit (produit_uid)
-            ENABLE;
+    ENABLE;
 
 ALTER TABLE produit_ingredient
-    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (produit_ingredient_uid)
+    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (ingredient_uid)
         REFERENCES ingredient (ingredient_uid)
-            ENABLE;
+    ENABLE;
 
 -------------------------------------------------------------
 -- Création table de jointure entre fournisseur et ingredient
 -------------------------------------------------------------
 CREATE TABLE fournisseur_ingredient
 (
-    fournisseur_ingredient_uid VARCHAR2(255)
+    fournisseur_ingredient_uid  VARCHAR2(255),
+    fournisseur_uid             VARCHAR2(255),
+    ingredient_uid              VARCHAR2(255)
 );
 
 -- Création cléf primaire de la table de jointure
 ALTER TABLE fournisseur_ingredient
     ADD CONSTRAINT fournisseur_ingredient_pk PRIMARY KEY (fournisseur_ingredient_uid)
-        ENABLE;
+    ENABLE;
 
 -- Création clés étangères entre les trois tables
 ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
+    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_uid)
         REFERENCES fournisseur (fournisseur_uid)
-            ENABLE;
+    ENABLE;
 
 ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (fournisseur_ingredient_uid)
+    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (ingredient_uid)
         REFERENCES ingredient (ingredient_uid)
-            ENABLE;
+    ENABLE;
 
 --Creation d'une clé étrangere entre la table achat et fournisseur_ingredient_uid
 ALTER TABLE achat
-    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (achat_uid)
+    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
         REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
     ENABLE;
 
@@ -336,16 +408,16 @@ INSERT INTO client (
     client_ville,
     client_date_creation
 ) VALUES (
-        COALESCE(i_client_uid, 'valeur_par_defaut'),
-        i_client_id,
-        i_client_email,
-        i_client_name,
-        i_client_prenom,
-        i_client_telephone,
-        i_client_adresse,
-        i_client_cp,
-        i_client_ville,
-        i_client_date_creation
+             COALESCE(i_client_uid, 'valeur_par_defaut'),
+             i_client_id,
+             i_client_email,
+             i_client_name,
+             i_client_prenom,
+             i_client_telephone,
+             i_client_adresse,
+             i_client_cp,
+             i_client_ville,
+             i_client_date_creation
          );
 END insert_client;
 /
@@ -398,6 +470,7 @@ INSERT INTO produit(produit_uid, produit_id, produit_nom)
 VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos viande');
 
 -- création de 20 clients de manière aléatoire (avec nom1/prenom1)
+
 BEGIN
 FOR i IN 1..20 LOOP
         DECLARE
@@ -422,7 +495,7 @@ ELSE v_ville := 'Autre';
 END CASE;
 
 INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone, client_adresse, client_cp, client_ville, client_date_creation)
-VALUES (SYS_GUID(), seq_id_client.nextval, 'client' || seq_id_client.currval || '@example.com', 'Nom' || i, 'Prenom' || i, '06' || LPAD(dbms_random.value(10000000, 99999999), 8, '0'), 'Rue' || i, v_cp, v_ville, SYSDATE);
+VALUES (SYS_GUID(), seq_id_client.nextval, 'client' || i || '@example.com', 'Nom' || i, 'Prenom' || i, '06' || LPAD(dbms_random.value(10000000, 99999999), 8, '0'), 'Rue' || i, v_cp, v_ville, SYSDATE);
 EXCEPTION
             WHEN OTHERS THEN
                 DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création du client ' || i || ' : ' || SQLERRM);
@@ -436,6 +509,44 @@ EXCEPTION
 END;
 /
 
+-- Generation de 20 comandes aléatoires depuis 10 jours
+BEGIN
+FOR i IN 1..20 LOOP
+        DECLARE
+v_client_name VARCHAR2(255);
+            v_montant NUMBER;
+            v_commande_date DATE;
+BEGIN
+            -- Sélection aléatoire d'un numéro de client entre 1 et 20
+SELECT 'Nom' || TRUNC(DBMS_RANDOM.VALUE(1, 20))
+INTO v_client_name
+FROM dual;
+
+-- Génération aléatoire d'un montant entre 7 et 150
+v_montant := ROUND(DBMS_RANDOM.VALUE(7, 150), 2);
+
+            -- Génération aléatoire d'une date entre aujourd'hui et il y a 10 jours
+            v_commande_date := TRUNC(SYSDATE - DBMS_RANDOM.VALUE(0, 10));
+
+            -- Insertion de la commande avec le client correspondant, le montant aléatoire et la date aléatoire
+INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date, commande_montant)
+SELECT
+    SYS_GUID(),
+    seq_id_commande.NEXTVAL,
+    client_uid,
+    v_commande_date,
+    v_montant
+FROM
+    client
+WHERE
+    client_name = v_client_name;
+EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                DBMS_OUTPUT.PUT_LINE('Aucun client trouvé.');
+END;
+END LOOP;
+COMMIT;
+END;
 
 
 -- STATISTIQUES À EXTRAIRE ;
@@ -445,3 +556,7 @@ END;
 -- Quand ai-je acheté de la viande pour la dernière fois
 
 -- Le nom du client qui a mangé le plus de poulet entre le 19 mars et le 8 mai
+
+
+-- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
+
