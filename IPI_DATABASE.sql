@@ -122,9 +122,9 @@ ALTER TABLE produit
     ENABLE;
 
 
-----------------------------
+---------------------------------
 -- Creation table type_ingredient
-----------------------------
+---------------------------------
 CREATE TABLE type_ingredient
 (
     type_ingredient_uid   VARCHAR2(255),
@@ -140,8 +140,9 @@ INSERT INTO type_ingredient(type_ingredient_id,type_ingredient_nom)
 VALUES (seq_id_type_ingredient.nextval,'typeIngredientNom');
 
 -- Ajout clé primaire
--- Attribuer une valeur par défaut à la colonne type_ingredient_uid
+    -- Attribuer une valeur par défaut à la colonne type_ingredient_uid
 UPDATE type_ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
+
 ALTER TABLE type_ingredient
     ADD CONSTRAINT type_ingredient_pk PRIMARY KEY (type_ingredient_uid)
     ENABLE;
@@ -164,23 +165,20 @@ CREATE SEQUENCE seq_id_ingredient
 INSERT INTO ingredient(ingredient_id,ingredient_nom,ingredient_unite)
 VALUES (seq_id_ingredient.nextval, 'nom ingredient', 120);
 
-----------------------
+
 -- Ajout clé primaire
--- Vérifier s'il existe des valeurs NULL dans la colonne ingredient_uid
+    -- Vérifier s'il existe des valeurs NULL dans la colonne ingredient_uid
 SELECT COUNT(*) FROM ingredient WHERE ingredient_uid IS NULL;
 
--- Mettre à jour les valeurs NULL avec des valeurs uniques
+    -- Mettre à jour les valeurs NULL avec des valeurs uniques
 UPDATE ingredient SET ingredient_uid = SYS_GUID() WHERE ingredient_uid IS NULL;
 
--- Assurez-vous qu'il n'y a plus de valeurs NULL dans la colonne ingredient_uid
+    -- S'assurer qu'il n'y a plus de valeurs NULL dans la colonne ingredient_uid
 SELECT COUNT(*) FROM ingredient WHERE ingredient_uid IS NULL;
 
--- Ajouter la contrainte de clé primaire
-ALTER TABLE ingredient MODIFY (ingredient_uid VARCHAR2(255) NOT NULL); -- Si nécessaire
+    -- Ajouter la contrainte de clé primaire
+ALTER TABLE ingredient MODIFY (ingredient_uid VARCHAR2(255) NOT NULL);
 ALTER TABLE ingredient ADD CONSTRAINT ingredient_pk PRIMARY KEY (ingredient_uid) ENABLE;
-
-
-
 
 --Creation d'une clé étrangère entre ingredient et type_ingredient
 UPDATE ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
@@ -188,9 +186,6 @@ ALTER TABLE ingredient
     ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (type_ingredient_uid)
         REFERENCES type_ingredient (type_ingredient_uid)
     ENABLE;
-
-
-
 
 -----------------------------
 -- Creation table fournisseur
@@ -215,17 +210,12 @@ INSERT INTO fournisseur(fournisseur_id,fournisseur_nom,fournisseur_email,fournis
 VALUES (seq_id_fournisseur.nextval,'valeur par defaut','valeur@pardeaaut','valeur par defaut','valeur par defaut','valeur par defaut','valeur par defaut',SYSDATE);
 
 -- Ajout clé primaire
--- Mettre à jour les valeurs NULL dans la colonne fournisseur_uid avec une valeur par défaut
 UPDATE fournisseur SET fournisseur_uid = 'nouvelle_valeur' WHERE fournisseur_uid IS NULL;
-
--- Une fois que toutes les valeurs NULL sont mises à jour, ajoutez la contrainte de clé primaire
 ALTER TABLE fournisseur
-    MODIFY (fournisseur_uid VARCHAR2(255) NOT NULL); -- Assurez-vous que la colonne n'accepte plus de valeurs NULL
-
+    MODIFY (fournisseur_uid VARCHAR2(255) NOT NULL);
 ALTER TABLE fournisseur
     ADD CONSTRAINT fournisseur_pk PRIMARY KEY (fournisseur_uid)
     ENABLE;
-
 
 -----------------------
 -- Creation table achat
@@ -247,21 +237,15 @@ INSERT INTO achat(achat_id,achat_date,achat_quantite,achat_prix)
 VALUES (seq_id_achat.nextval,SYSDATE,5,24);
 
 -- Ajout clé primaire
--- Vérifiez s'il y a des valeurs NULL dans la colonne achat_uid
 SELECT COUNT(*) FROM achat WHERE achat_uid IS NULL;
+DELETE FROM achat
+    WHERE achat_uid IS NULL;
 
--- Si le résultat est supérieur à zéro, mettez à jour les valeurs NULL avec des valeurs appropriées ou supprimez les lignes concernées.
-DELETE FROM achat WHERE achat_uid IS NULL;
--- Une fois que toutes les valeurs NULL sont traitées, ajoutez la contrainte de clé primaire
 ALTER TABLE achat
-    MODIFY (achat_uid VARCHAR2(255) NOT NULL); -- Assurez-vous que la colonne n'accepte plus de valeurs NULL
-
+    MODIFY (achat_uid VARCHAR2(255) NOT NULL);
 ALTER TABLE achat
     ADD CONSTRAINT achat_pk PRIMARY KEY (achat_uid)
     ENABLE;
-
-
-
 
 -------------------------------------------------------
 -- Création table de jointure entre commande et produit
@@ -301,12 +285,12 @@ CREATE TABLE produit_ingredient
     ingredient_uid                       VARCHAR2(255)
 );
 
--- Création cléf primaire de la table de jointure
+-- Création clef primaire de la table de jointure
 ALTER TABLE produit_ingredient
     ADD CONSTRAINT produit_ingredient_pk PRIMARY KEY (produit_ingredient_uid)
     ENABLE;
 
--- Création clés étangères entre les trois tables
+-- Création clefs étangères entre les trois tables
 ALTER TABLE produit_ingredient
     ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_uid)
         REFERENCES produit (produit_uid)
@@ -349,7 +333,6 @@ ALTER TABLE achat
         REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
     ENABLE;
 
-
 -- creation d'une procedure pour afficher d'autres procedures :
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'Test') AS
 BEGIN
@@ -372,8 +355,6 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(v_message);
 END;
 /
-
-
 
 -------------------------------------------------------
 -- obj 1 : Créer des accesseurs (GET/SET) aux tables --
@@ -469,8 +450,10 @@ VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos poulet');
 INSERT INTO produit(produit_uid, produit_id, produit_nom)
 VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos viande');
 
--- création de 20 clients de manière aléatoire (avec nom1/prenom1)
 
+---------------------------------------------------------------------
+-- création de 20 clients de manière aléatoire (avec nom1/prenom1)
+---------------------------------------------------------------------
 BEGIN
 FOR i IN 1..20 LOOP
         DECLARE
@@ -479,19 +462,18 @@ v_cp VARCHAR2(5);
 BEGIN
             -- Choix aléatoire d'un code postal parmi les valeurs spécifiées
 CASE DBMS_RANDOM.VALUE(1, 5)
-                WHEN 1 THEN v_cp := '69001';
-WHEN 2 THEN v_cp := '69002';
-WHEN 3 THEN v_cp := '38780';
-WHEN 4 THEN v_cp := '38200';
-ELSE v_cp := '69003';
+    WHEN 1 THEN v_cp := '69001';
+    WHEN 2 THEN v_cp := '69002';
+    WHEN 3 THEN v_cp := '38780';
+    WHEN 4 THEN v_cp := '38200';
+    ELSE v_cp := '69003';
 END CASE;
-
             -- Attribuer la ville en fonction du code postal
 CASE
-                WHEN v_cp LIKE '69%' THEN v_ville := 'Lyon';
-WHEN v_cp = '38200' THEN v_ville := 'Vienne';
-WHEN v_cp = '38780' THEN v_ville := 'Estrablin';
-ELSE v_ville := 'Autre';
+    WHEN v_cp LIKE '69%' THEN v_ville := 'Lyon';
+    WHEN v_cp = '38200' THEN v_ville := 'Vienne';
+    WHEN v_cp = '38780' THEN v_ville := 'Estrablin';
+    ELSE v_ville := 'Autre';
 END CASE;
 
 INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone, client_adresse, client_cp, client_ville, client_date_creation)
