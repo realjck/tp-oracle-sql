@@ -548,7 +548,7 @@ END LOOP;
 COMMIT;
 END;
 
-
+--
 -- STATISTIQUES À EXTRAIRE ;
 
 -- Quel stock j’ai dans tel produit
