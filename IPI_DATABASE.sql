@@ -184,7 +184,10 @@ ALTER TABLE ingredient MODIFY (ingredient_uid VARCHAR2(255) NOT NULL);
 ALTER TABLE ingredient ADD CONSTRAINT ingredient_pk PRIMARY KEY (ingredient_uid) ENABLE;
 
 --Creation d'une clé étrangère entre ingredient et type_ingredient
-UPDATE ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
+-- UPDATE ingredient SET type_ingredient_uid = 'valeur_par_defaut' WHERE type_ingredient_uid IS NULL;
+
+
+
 ALTER TABLE ingredient
     ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (type_ingredient_uid)
         REFERENCES type_ingredient (type_ingredient_uid)
@@ -210,7 +213,7 @@ CREATE TABLE fournisseur
 CREATE SEQUENCE seq_id_fournisseur
     INCREMENT BY 1;
 INSERT INTO fournisseur(fournisseur_id,fournisseur_nom,fournisseur_email,fournisseur_telephone,fournisseur_adresse,fournisseur_cp,fournisseur_ville,fournisseur_date_creation)
-VALUES (seq_id_fournisseur.nextval,'valeur par defaut','valeur@pardeaaut','valeur par defaut','valeur par defaut','valeur par defaut','valeur par defaut',SYSDATE);
+VALUES (seq_id_fournisseur.nextval,'valeur par defaut','valeur@pardefaut','valeur par defaut','valeur par defaut','valeur par defaut','valeur par defaut',SYSDATE);
 
 -- Ajout clé primaire
 UPDATE fournisseur SET fournisseur_uid = 'nouvelle_valeur' WHERE fournisseur_uid IS NULL;
@@ -351,7 +354,7 @@ END;
 /
 
 -- Affichage d'un message :
-SET SERVEROUTPUT ON;
+--SET SERVEROUTPUT ON;
 DECLARE
 v_message VARCHAR2(100) := 'Bonjour, monde !';
 BEGIN
@@ -544,4 +547,3 @@ END;
 
 
 -- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
-
