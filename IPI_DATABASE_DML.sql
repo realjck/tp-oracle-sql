@@ -102,9 +102,9 @@ INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingred
 VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Sauce', 20);
 
 -- Procédure d'ajout d'ingrédient en fonction de leurs types
-CREATE OR REPLACE PROCEDURE insert_ingredient_by_type(
-    p_ingredient_name IN VARCHAR2,
-    p_type_ingredient_name IN VARCHAR2
+CREATE OR REPLACE PROCEDURE insert_ingredient_par_type(
+    p_ingredient_nom IN VARCHAR2,
+    p_type_ingredient_nom IN VARCHAR2
 )
 AS
     v_type_ingredient_uid VARCHAR2(255);
@@ -112,37 +112,33 @@ BEGIN
     SELECT type_ingredient_uid
     INTO v_type_ingredient_uid
     FROM type_ingredient
-    WHERE type_ingredient_nom = p_type_ingredient_name;
+    WHERE type_ingredient_nom = p_type_ingredient_nom;
 
     IF v_type_ingredient_uid IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20000, 'Ingredient not found: ' || p_ingredient_name);
+        RAISE_APPLICATION_ERROR(-20000, 'Ingredient non trouvé : ' || p_ingredient_nom);
     END IF;
 
-    INSERT INTO ingredient (
-        ingredient_uid,
-        type_ingredient_uid,
-        ingredient_id,
-        ingredient_nom
-    )
-    VALUES (
-               SYS_GUID(),
-               v_type_ingredient_uid,
-               seq_id_ingredient.nextval,
-               p_ingredient_name
-           );
-END insert_ingredient_by_type;
+    INSERT INTO ingredient (ingredient_uid,
+                            type_ingredient_uid,
+                            ingredient_id,
+                            ingredient_nom)
+    VALUES (SYS_GUID(),
+            v_type_ingredient_uid,
+            seq_id_ingredient.nextval,
+            p_ingredient_nom);
+END;
 
 -- Ajout des ingrédients
-CALL insert_ingredient_by_type('Pita', 'Pain');
-CALL insert_ingredient_by_type('Galette', 'Pain');
-CALL insert_ingredient_by_type('Buns', 'Pain');
-CALL insert_ingredient_by_type('Salade', 'Légume');
-CALL insert_ingredient_by_type('Tomate', 'Légume');
-CALL insert_ingredient_by_type('Oignons', 'Légume');
-CALL insert_ingredient_by_type('Boeuf', 'Viande');
-CALL insert_ingredient_by_type('Poulet', 'Viande');
-CALL insert_ingredient_by_type('Ketchup', 'Sauce');
-CALL insert_ingredient_by_type('Mayonnaise', 'Sauce');
+CALL insert_ingredient_par_type('Pita', 'Pain');
+CALL insert_ingredient_par_type('Galette', 'Pain');
+CALL insert_ingredient_par_type('Buns', 'Pain');
+CALL insert_ingredient_par_type('Salade', 'Légume');
+CALL insert_ingredient_par_type('Tomate', 'Légume');
+CALL insert_ingredient_par_type('Oignons', 'Légume');
+CALL insert_ingredient_par_type('Boeuf', 'Viande');
+CALL insert_ingredient_par_type('Poulet', 'Viande');
+CALL insert_ingredient_par_type('Ketchup', 'Sauce');
+CALL insert_ingredient_par_type('Mayonnaise', 'Sauce');
 
 
 -- Insertion des produits
@@ -165,64 +161,100 @@ INSERT INTO produit(produit_uid, produit_id, produit_nom)
 VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab ketchup');
 
 
--- création de le jointure produit_ingredient (recettes des produits)
+-- Création de la jointure produit_ingredient (recettes des produits)
 
--- procédure ajoute un ingrédient à un produit selon un certain volume
-CREATE OR REPLACE PROCEDURE add_ingredient_to_produit(
-    p_ingredient_name IN VARCHAR2,
-    p_produit_name IN VARCHAR2,
+-- Procédure ajoute un ingrédient à un produit selon un certain volume
+CREATE OR REPLACE PROCEDURE ajoute_ingredient_produit(
+    p_ingredient_nom IN VARCHAR2,
+    p_produit_nom IN VARCHAR2,
     p_volume IN NUMBER
-)
-    IS
-    v_ingredient_uid  VARCHAR2(255);
+) IS
+    v_ingredient_uid VARCHAR2(255);
     v_produit_uid    VARCHAR2(255);
 BEGIN
-    -- Check if ingredient exists
     SELECT ingredient_uid
     INTO v_ingredient_uid
     FROM ingredient
-    WHERE ingredient_nom = p_ingredient_name;
+    WHERE ingredient_nom = p_ingredient_nom;
 
     IF v_ingredient_uid IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20000, 'Ingredient not found: ' || p_ingredient_name);
+        RAISE_APPLICATION_ERROR(-20000, 'Ingredient non trouvé : ' || p_ingredient_nom);
     END IF;
 
     -- Check if product exists
     SELECT produit_uid
     INTO v_produit_uid
     FROM produit
-    WHERE produit_nom = p_produit_name;
+    WHERE produit_nom = p_produit_nom;
 
     IF v_produit_uid IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Product not found: ' || p_produit_name);
+        RAISE_APPLICATION_ERROR(-20001, 'Produit non trouvé : ' || p_produit_nom);
     END IF;
 
     -- Insert ingredient with volume into product_ingredient table
-    INSERT INTO produit_ingredient (
-        produit_ingredient_uid,
-        produit_ingredient_volume,
-        produit_uid,
-        ingredient_uid
-    )
-    VALUES (
-               SYS_GUID(),
-               p_volume,
-               v_produit_uid,
-               v_ingredient_uid
-           );
+    INSERT INTO produit_ingredient (produit_ingredient_uid,
+                                    produit_ingredient_volume,
+                                    produit_uid,
+                                    ingredient_uid)
+    VALUES (SYS_GUID(),
+            p_volume,
+            v_produit_uid,
+            v_ingredient_uid);
 END;
 
 
-BEGIN
-    add_ingredient_to_produit('Pita', 'Kebab mayonnaise', 100);
-END;
+CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 150);
+CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Burger mayonnaise', 25);
+CALL ajoute_ingredient_produit('Boeuf', 'Burger mayonnaise', 150);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Burger mayonnaise', 25);
+
+CALL ajoute_ingredient_produit('Buns', 'Burger ketchup', 150);
+CALL ajoute_ingredient_produit('Salade', 'Burger ketchup', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Burger ketchup', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Burger ketchup', 25);
+CALL ajoute_ingredient_produit('Boeuf', 'Burger ketchup', 150);
+CALL ajoute_ingredient_produit('Ketchup', 'Burger ketchup', 25);
+
+CALL ajoute_ingredient_produit('Galette', 'Tacos', 100);
+CALL ajoute_ingredient_produit('Salade', 'Tacos', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Tacos', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Tacos', 25);
+CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 75);
+CALL ajoute_ingredient_produit('Poulet', 'Tacos', 75);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', 25);
+CALL ajoute_ingredient_produit('Ketchup', 'Tacos', 25);
+
+CALL ajoute_ingredient_produit('Galette', 'Galette poulet', 100);
+CALL ajoute_ingredient_produit('Salade', 'Galette poulet', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Galette poulet', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Galette poulet', 25);
+CALL ajoute_ingredient_produit('Poulet', 'Galette poulet', 150);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Galette poulet', 25);
+
+CALL ajoute_ingredient_produit('Pita', 'Kebab mayonnaise', 150);
+CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', 25);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 75);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 75);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', 25);
+
+CALL ajoute_ingredient_produit('Pita', 'Kebab ketchup', 150);
+CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', 25);
+CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', 25);
+CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 25);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 75);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 75);
+CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 25);
 
 
 ---------------------------------------------------------------------
--- création de 20 clients de manière aléatoire (avec nom1/prenom1)
+-- création de 100 clients de manière aléatoire (avec nom1/prenom1)
 ---------------------------------------------------------------------
 BEGIN
-    FOR i IN 1..2000
+    FOR i IN 1..100
         LOOP
             DECLARE
                 v_cp    VARCHAR2(5);
@@ -263,9 +295,9 @@ EXCEPTION
 END;
 /
 
--- Generation de 20 commandes aléatoires depuis 10 jours
+-- Generation de 500 commandes aléatoires depuis 10 jours
 BEGIN
-    FOR i IN 1..20000
+    FOR i IN 1..500
         LOOP
             DECLARE
                 v_client_name   VARCHAR2(255);
