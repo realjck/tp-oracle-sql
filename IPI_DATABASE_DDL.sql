@@ -59,8 +59,7 @@ CREATE TABLE commande
     commande_uid     VARCHAR2(255) PRIMARY KEY,
     commande_id      NUMBER NOT NULL,
     client_uid       VARCHAR2(255),
-    commande_date    DATE,
-    commande_montant NUMBER
+    commande_date    DATE
 );
 
 -- Création sequence
@@ -79,9 +78,10 @@ ALTER TABLE commande
 -------------------------
 CREATE TABLE produit
 (
-    produit_uid VARCHAR2(255) PRIMARY KEY,
-    produit_id  NUMBER        NOT NULL,
-    produit_nom VARCHAR2(255) NOT NULL
+    produit_uid  VARCHAR2(255) PRIMARY KEY,
+    produit_id   NUMBER        NOT NULL,
+    produit_nom  VARCHAR2(255) NOT NULL,
+    produit_prix NUMBER        NOT NULL
 );
 
 -- Création sequence
@@ -193,10 +193,10 @@ ALTER TABLE commande_produit
 ---------------------------------------------------------
 CREATE TABLE produit_ingredient
 (
-    produit_ingredient_uid               VARCHAR2(255) PRIMARY KEY,
-    produit_ingredient_volume            NUMBER,
-    produit_uid                          VARCHAR2(255),
-    ingredient_uid                       VARCHAR2(255)
+    produit_ingredient_uid    VARCHAR2(255) PRIMARY KEY,
+    produit_ingredient_volume NUMBER,
+    produit_uid               VARCHAR2(255),
+    ingredient_uid            VARCHAR2(255)
 );
 
 -- Création clefs étrangères entre les trois tables

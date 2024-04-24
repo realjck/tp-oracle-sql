@@ -155,32 +155,32 @@ CALL insert_ingredient_par_type('Orangina', 'Boisson');
 
 
 -- Insertion des produits
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger mayonnaise');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger mayonnaise', 9);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger ketchup');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Burger ketchup', 9);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Tacos', 11.50);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Galette poulet');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Galette poulet', 7.50);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab mayonnaise');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab mayonnaise', 7.50);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab ketchup');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab ketchup', 7.50);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Frites');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Frites', 3.80);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Coca');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Coca', 2.50);
 
-INSERT INTO produit(produit_uid, produit_id, produit_nom)
-VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina');
+INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina', 2.50);
 
 
 -- Création de la jointure produit_ingredient (recettes des produits)
@@ -323,7 +323,6 @@ EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création des clients : ' || SQLERRM);
 END;
-/
 
 -- Generation de 500 commandes aléatoires depuis 10 jours
 BEGIN
@@ -339,19 +338,15 @@ BEGIN
                 INTO v_client_name
                 FROM dual;
 
-                -- Génération aléatoire d'un montant entre 7 et 150
-                v_montant := ROUND(DBMS_RANDOM.VALUE(7, 150), 2);
-
                 -- Génération aléatoire d'une date entre aujourd'hui et il y a 10 jours
                 v_commande_date := TRUNC(SYSDATE - DBMS_RANDOM.VALUE(0, 10));
 
                 -- Insertion de la commande avec le client correspondant, le montant aléatoire et la date aléatoire
-                INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date, commande_montant)
+                INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date)
                 SELECT SYS_GUID(),
                        seq_id_commande.NEXTVAL,
                        client_uid,
-                       v_commande_date,
-                       v_montant
+                       v_commande_date
                 FROM client
                 WHERE client_name = v_client_name;
             EXCEPTION
