@@ -84,14 +84,14 @@ END;
 -- Fin objectif 1--
 -------------------
 
--- Création de types d'ingrédients viande/legumes/sauces/pain
+-- Création de types d'ingrédients
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
                             type_ingredient_duree_peremption)
-VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Pain', 1);
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Pain', 5);
 
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
                             type_ingredient_duree_peremption)
-VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Légume', 2);
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Légume', 10);
 
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
                             type_ingredient_duree_peremption)
@@ -99,7 +99,15 @@ VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Viande', 3);
 
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
                             type_ingredient_duree_peremption)
-VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Sauce', 20);
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Sauce', 10);
+
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
+                            type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Ingrédient base', 60);
+
+INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
+                            type_ingredient_duree_peremption)
+VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Boisson', 300);
 
 -- Procédure d'ajout d'ingrédient en fonction de leurs types
 CREATE OR REPLACE PROCEDURE insert_ingredient_par_type(
@@ -135,10 +143,15 @@ CALL insert_ingredient_par_type('Buns', 'Pain');
 CALL insert_ingredient_par_type('Salade', 'Légume');
 CALL insert_ingredient_par_type('Tomate', 'Légume');
 CALL insert_ingredient_par_type('Oignons', 'Légume');
+CALL insert_ingredient_par_type('Pommes de terre', 'Légume');
 CALL insert_ingredient_par_type('Boeuf', 'Viande');
 CALL insert_ingredient_par_type('Poulet', 'Viande');
 CALL insert_ingredient_par_type('Ketchup', 'Sauce');
 CALL insert_ingredient_par_type('Mayonnaise', 'Sauce');
+CALL insert_ingredient_par_type('Huile', 'Ingrédient base');
+CALL insert_ingredient_par_type('Sel', 'Ingrédient base');
+CALL insert_ingredient_par_type('Coca', 'Boisson');
+CALL insert_ingredient_par_type('Orangina', 'Boisson');
 
 
 -- Insertion des produits
@@ -159,6 +172,15 @@ VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab mayonnaise');
 
 INSERT INTO produit(produit_uid, produit_id, produit_nom)
 VALUES (SYS_GUID(), seq_id_produit.nextval, 'Kebab ketchup');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Frites');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Coca');
+
+INSERT INTO produit(produit_uid, produit_id, produit_nom)
+VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina');
 
 
 -- Création de la jointure produit_ingredient (recettes des produits)
@@ -248,6 +270,14 @@ CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 25);
 CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 75);
 CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 75);
 CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 25);
+
+CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', 150);
+CALL ajoute_ingredient_produit('Huile', 'Frites', 20);
+CALL ajoute_ingredient_produit('Sel', 'Frites', 2);
+
+CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 330);
+
+CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 330);
 
 
 ---------------------------------------------------------------------
