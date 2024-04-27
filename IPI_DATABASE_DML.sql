@@ -6,26 +6,21 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(i_message);
 END DBMS;
 
--------------------------------------------------------
--- obj 1 : Créer des accesseurs (GET/SET) aux tables --
--- (procédure/fonction pour créer, supprimer, mettre--
--- à jour, afficher des informations)
--------------------------------------------------------
--- Procédure pour insérer un client
+----------
+-- Clients
+----------
+
+-- Procédure d'ajout d'un client
 CREATE OR REPLACE PROCEDURE insert_client(
-    i_client_uid IN VARCHAR2,
-    i_client_id IN NUMBER DEFAULT NULL,
     i_client_email IN VARCHAR2,
     i_client_name IN VARCHAR2,
     i_client_prenom IN VARCHAR2,
     i_client_telephone IN VARCHAR2,
     i_client_adresse IN VARCHAR2,
     i_client_cp IN VARCHAR2,
-    i_client_ville IN VARCHAR2,
-    i_client_date_creation IN DATE
+    i_client_ville IN VARCHAR2
 ) AS
 BEGIN
-
     INSERT INTO client (client_uid,
                         client_id,
                         client_email,
@@ -36,8 +31,8 @@ BEGIN
                         client_cp,
                         client_ville,
                         client_date_creation)
-    VALUES (COALESCE(i_client_uid, 'valeur_par_defaut'),
-            i_client_id,
+    VALUES (SYS_GUID(),
+            SEQ_ID_CLIENT.nextval,
             i_client_email,
             i_client_name,
             i_client_prenom,
@@ -45,29 +40,34 @@ BEGIN
             i_client_adresse,
             i_client_cp,
             i_client_ville,
-            i_client_date_creation);
+            SYSDATE);
+    COMMIT;
 END insert_client;
 
 
 -- Appel de la procédure
 BEGIN
-    insert_client(
-            i_client_uid => SYS_GUID(),
-            i_client_id => seq_id_client.nextval,
-            i_client_email => 'client@example.com',
-            i_client_name => 'John',
-            i_client_prenom => 'Doe',
-            i_client_telephone => '0623243546',
-            i_client_adresse => '2 rue ipi',
-            i_client_cp => '38720',
-            i_client_ville => 'Lyon',
-            i_client_date_creation => SYSDATE
-    );
+    insert_client('jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
+                  '20 rue des Monts d''Or', '69009', 'Lyon');
+    insert_client('benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
+                  '32 Avenue du Maréchal Leclerc', '75015', 'Paris');
+    insert_client('zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
+                  '12 Rue des Lilas', '33000', 'Bordeaux');
+    insert_client('garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
+                  '45 Rue Victor Hugo', '44000', 'Nantes');
+    insert_client('kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
+                  '8 Rue Gambetta', '59000', 'Lille');
+    insert_client('nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
+                  '10 Place de la République', '13000', 'Marseille');
+    insert_client('popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
+                  '21 Boulevard des Alpes', '74000', 'Annecy');
+    insert_client('smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
+                  '3 Allée des Bleuets', '80000', 'Amiens');
+    insert_client('lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
+                  '4 Rue des Jardins', '94000', 'Créteil');
+    insert_client('schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
+                  '6 Avenue du Général Leclerc', '67000', 'Strasbourg');
 END;
-
--------------------
--- Fin objectif 1--
--------------------
 
 -- Création de types d'ingrédients
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
@@ -269,79 +269,13 @@ CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 330);
 CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 330);
 
 
------------------------
--- création des clients
------------------------
-BEGIN
-    INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                       client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES (SYS_GUID(), seq_id_client.nextval, 'jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
-            '20 rue des Monts d''Or', '69009', 'Lyon', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
-         '32 Avenue du Maréchal Leclerc', '75015', 'Paris', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
-         '12 Rue des Lilas', '33000', 'Bordeaux', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
-         '45 Rue Victor Hugo', '44000', 'Nantes', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
-         '8 Rue Gambetta', '59000', 'Lille', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
-         '10 Place de la République', '13000', 'Marseille', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
-         '21 Boulevard des Alpes', '74000', 'Annecy', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
-         '3 Allée des Bleuets', '80000', 'Amiens', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
-         '4 Rue des Jardins', '94000', 'Créteil', SYSDATE);
-
-    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                        client_adresse, client_cp, client_ville, client_date_creation)
-    VALUES
-        (SYS_GUID(), seq_id_client.NEXTVAL, 'schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
-         '6 Avenue du Général Leclerc', '67000', 'Strasbourg', SYSDATE);
-
-    COMMIT;
-END;
-
-
 -------------------------
 -- création des commandes
 -------------------------
 
---Procédure d'insert d'une commande en fonction de l'email d'un client, du produit et de sa quantité :
+--Procédure d'insert d'une commande-produit en fonction de l'id de la commande, de l'email d'un client, du produit et de sa quantité :
 CREATE OR REPLACE PROCEDURE insert_commande (
+    p_commande_id               IN NUMBER,
     p_client_email              IN VARCHAR2,
     p_commande_date             IN DATE,
     p_produit_nom               IN VARCHAR2,
@@ -352,28 +286,151 @@ CREATE OR REPLACE PROCEDURE insert_commande (
     v_produit_uid               VARCHAR2(255);
     v_commande_uid              VARCHAR2(255);
 BEGIN
+
     -- Récupérer l'UID du client en fonction de son email
-    SELECT client_uid INTO v_client_uid
-    FROM client
-    WHERE client_email = p_client_email;
+    IF p_client_email IS NOT NULL THEN
+        SELECT client_uid INTO v_client_uid
+        FROM client
+        WHERE client_email = p_client_email;
+    ELSE
+        v_client_uid := NULL;
+    END IF;
+
+    -- Commande existante ? on récupère l'UID
+    MERGE INTO commande c
+    USING dual d
+    ON (c.commande_id = p_commande_id)
+    WHEN NOT MATCHED THEN
+        INSERT (commande_uid, commande_id, client_uid, commande_date)
+        VALUES (SYS_GUID(), p_commande_id, v_client_uid, p_commande_date);
+
+    SELECT commande_uid INTO v_commande_uid
+    FROM commande
+    WHERE commande_id = p_commande_id;
 
     -- Récupérer l'UID du produit en fonction de son nom
     SELECT produit_uid INTO v_produit_uid
     FROM produit
     WHERE produit_nom = p_produit_nom;
-
-    -- Insérer la commande
-    INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date)
-    VALUES (SYS_GUID(), seq_id_commande.NEXTVAL, v_client_uid, p_commande_date)
-    RETURNING commande_uid INTO v_commande_uid;
+    IF v_produit_uid IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Produit non trouvé pour le nom spécifié.');
+    END IF;
 
     -- Insérer l'entrée dans la table commande_produit
     INSERT INTO commande_produit (commande_produit_uid, commande_produit_quantite_vendue, commande_uid, produit_uid)
     VALUES (SYS_GUID(), p_quantite_produit_vendue, v_commande_uid, v_produit_uid);
     COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
 END;
 
-CALL insert_commande('jeanmartin@gmail.com', SYSDATE, 'Burger mayonnaise', 1);
+-- Commandes
+CALL insert_commande(1,'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
+CALL insert_commande(1,'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 1);
+CALL insert_commande(1,'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Coca', 1);
+
+CALL insert_commande(2,NULL,
+                     TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger ketchup', 2);
+CALL insert_commande(2,NULL,
+                     TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 2);
+CALL insert_commande(2,NULL,
+                     TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Orangina', 2);
+
+CALL insert_commande(3,'benali.khaled@orange.fr',
+                     TO_DATE('2024-04-27 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Tacos', 4);
+CALL insert_commande(3,'benali.khaled@orange.fr',
+                     TO_DATE('2024-04-27 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 2);
+
+CALL insert_commande(4,NULL,
+                     TO_DATE('2024-04-27 12:20:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Galette poulet', 3);
+
+CALL insert_commande(5,'zhang.mei@free.fr',
+                     TO_DATE('2024-04-27 12:25:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Kebab mayonnaise', 2);
+CALL insert_commande(5,'zhang.mei@free.fr',
+                     TO_DATE('2024-04-27 12:25:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Orangina', 2);
+
+CALL insert_commande(6,NULL,
+                     TO_DATE('2024-04-27 12:30:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 3);
+
+CALL insert_commande(7,'nguyen.thi@numericable.fr',
+                     TO_DATE('2024-04-27 12:35:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Galette poulet', 5);
+CALL insert_commande(7,'nguyen.thi@numericable.fr',
+                     TO_DATE('2024-04-27 12:35:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 3);
+
+CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
+CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 1);
+CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Orangina', 1);
+
+CALL insert_commande(9,'garcia.pedro@sfr.fr',
+                     TO_DATE('2024-04-27 12:45:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Kebab mayonnaise', 1);
+CALL insert_commande(9,'garcia.pedro@sfr.fr',
+                     TO_DATE('2024-04-27 12:45:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Orangina', 1);
+
+CALL insert_commande(10,NULL,
+                     TO_DATE('2024-04-27 12:50:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger ketchup', 2);
+CALL insert_commande(10,NULL,
+                     TO_DATE('2024-04-27 12:50:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Coca', 2);
+
+CALL insert_commande(11,'schmidt.hans@bouyguestelecom.fr',
+                     TO_DATE('2024-04-27 12:55:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Galette poulet', 1);
+CALL insert_commande(11,'schmidt.hans@bouyguestelecom.fr',
+                     TO_DATE('2024-04-27 12:55:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Coca', 1);
+
+CALL insert_commande(12,'lopez.jose@free.fr',
+                     TO_DATE('2024-04-27 13:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Kebab ketchup', 1);
+
+CALL insert_commande(13,'smith.mary@orange.fr',
+                     TO_DATE('2024-04-27 13:05:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Tacos', 6);
+CALL insert_commande(13,'smith.mary@orange.fr',
+                     TO_DATE('2024-04-27 13:05:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 6);
+
+CALL insert_commande(14,NULL,
+                     TO_DATE('2024-04-27 13:10:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Galette poulet', 3);
+
+CALL insert_commande(15,'popov.ivan@laposte.fr',
+                     TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Kebab mayonnaise', 1);
+CALL insert_commande(15,'popov.ivan@laposte.fr',
+                     TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Kebab ketchup', 1);
+CALL insert_commande(15,'popov.ivan@laposte.fr',
+                     TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 2);
 
 
 -------------------------
@@ -382,7 +439,6 @@ CALL insert_commande('jeanmartin@gmail.com', SYSDATE, 'Burger mayonnaise', 1);
 
 -- Procédure pour insérer un fournisseur
 CREATE OR REPLACE PROCEDURE insert_fournisseur(
-    p_fournisseur_uid IN VARCHAR2,
     p_fournisseur_nom IN VARCHAR2,
     p_fournisseur_email IN VARCHAR2,
     p_fournisseur_telephone IN VARCHAR,
@@ -410,6 +466,7 @@ BEGIN
             p_fournisseur_cp,
             p_fournisseur_ville,
             SYSDATE);
+    COMMIT;
 END insert_fournisseur;
 
 
@@ -417,7 +474,6 @@ END insert_fournisseur;
 -- Test d'appel de la procédure
 BEGIN
     insert_fournisseur(
-            p_fournisseur_uid => SYS_GUID(),
             p_fournisseur_nom => 'Le grand marché',
             p_fournisseur_email => 'Le_grand_marche@email.com',
             p_fournisseur_telephone => '0836656565',
@@ -425,10 +481,9 @@ BEGIN
             p_fournisseur_cp => '69001',
             p_fournisseur_ville => 'Lyon'
     );
-    COMMIT;
 END;
 
-CALL insert_fournisseur(NULL, 'Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
+CALL insert_fournisseur('Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
 
 --
 -- STATISTIQUES À EXTRAIRE ;
