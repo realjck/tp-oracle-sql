@@ -1,5 +1,3 @@
--- TODO: Créer les données fournisseurs; fournisseurs_ingrédient
--- TODO: Faire quelques achats
 -- creation d'une procedure pour afficher d'autres procedures :
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'lorem ipsum') AS
 BEGIN
@@ -335,67 +333,6 @@ BEGIN
          '6 Avenue du Général Leclerc', '67000', 'Strasbourg', SYSDATE);
 
     COMMIT;
-INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                   client_adresse, client_cp, client_ville, client_date_creation)
-VALUES (SYS_GUID(), seq_id_client.nextval, 'jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
-        '20 rue des Monts d''Or', '69009', 'Lyon', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
-     '32 Avenue du Maréchal Leclerc', '75015', 'Paris', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
-     '12 Rue des Lilas', '33000', 'Bordeaux', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
-     '45 Rue Victor Hugo', '44000', 'Nantes', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
-     '8 Rue Gambetta', '59000', 'Lille', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
-     '10 Place de la République', '13000', 'Marseille', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
-     '21 Boulevard des Alpes', '74000', 'Annecy', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
-     '3 Allée des Bleuets', '80000', 'Amiens', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
-     '4 Rue des Jardins', '94000', 'Créteil', SYSDATE);
-
-INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                    client_adresse, client_cp, client_ville, client_date_creation)
-VALUES
-    (SYS_GUID(), seq_id_client.NEXTVAL, 'schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
-     '6 Avenue du Général Leclerc', '67000', 'Strasbourg', SYSDATE);
-
-COMMIT;
-
 END;
 
 
@@ -439,18 +376,12 @@ END;
 CALL insert_commande('jeanmartin@gmail.com', SYSDATE, 'Burger mayonnaise', 1);
 
 
-    COMMIT;
-END;
-
-CALL insert_commande('jeanmartin@gmail.com', SYSDATE, 'Burger mayonnaise', 1);
-
-
 -------------------------
 -- création des fournisseur
 -------------------------
 
 -- Procédure pour insérer un fournisseur
-CREAThE OR REPLACE PROCEDURE insert_fournisseur(
+CREATE OR REPLACE PROCEDURE insert_fournisseur(
     p_fournisseur_uid IN VARCHAR2,
     p_fournisseur_nom IN VARCHAR2,
     p_fournisseur_email IN VARCHAR2,
