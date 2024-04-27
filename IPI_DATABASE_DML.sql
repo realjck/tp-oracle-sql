@@ -427,6 +427,7 @@ BEGIN
             p_fournisseur_cp => '69001',
             p_fournisseur_ville => 'Lyon'
     );
+    COMMIT;
 END;
 
 CALL insert_fournisseur(NULL, 'Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
