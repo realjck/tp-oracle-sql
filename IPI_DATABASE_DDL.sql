@@ -113,7 +113,7 @@ CREATE TABLE ingredient
     type_ingredient_uid VARCHAR2(255),
     ingredient_id       NUMBER        NOT NULL,
     ingredient_nom      VARCHAR2(255) NOT NULL,
-    ingredient_unite    VARCHAR2(2)
+    ingredient_unite    VARCHAR2(2) NOT NULL
 );
 
 -- Création sequence

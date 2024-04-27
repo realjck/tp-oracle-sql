@@ -1,25 +1,12 @@
+-- TODO: Créer les données fournisseurs; fournisseurs_ingrédient
+-- TODO: Faire quelques achats
 -- creation d'une procedure pour afficher d'autres procedures :
-CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'Test') AS
+CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'lorem ipsum') AS
 BEGIN
     DBMS_OUTPUT.ENABLE;
     DBMS_OUTPUT.ENABLE(1000000);
     DBMS_OUTPUT.PUT_LINE(i_message);
 END DBMS;
-
--- Appel de la procédure
-BEGIN
-    DBMS('mon message');
-END;
-
-
--- Affichage d'un message :
---SET SERVEROUTPUT ON;
-DECLARE
-    v_message VARCHAR2(100) := 'Bonjour, monde !';
-BEGIN
-    DBMS_OUTPUT.PUT_LINE(v_message);
-END;
-
 
 -------------------------------------------------------
 -- obj 1 : Créer des accesseurs (GET/SET) aux tables --
@@ -112,7 +99,8 @@ VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Boisson', 300);
 -- Procédure d'ajout d'ingrédient en fonction de leurs types
 CREATE OR REPLACE PROCEDURE insert_ingredient_par_type(
     p_ingredient_nom IN VARCHAR2,
-    p_type_ingredient_nom IN VARCHAR2
+    p_type_ingredient_nom IN VARCHAR2,
+    p_ingredient_unite IN VARCHAR2
 )
 AS
     v_type_ingredient_uid VARCHAR2(255);
@@ -129,29 +117,31 @@ BEGIN
     INSERT INTO ingredient (ingredient_uid,
                             type_ingredient_uid,
                             ingredient_id,
-                            ingredient_nom)
+                            ingredient_nom,
+                            ingredient_unite)
     VALUES (SYS_GUID(),
             v_type_ingredient_uid,
             seq_id_ingredient.nextval,
-            p_ingredient_nom);
+            p_ingredient_nom,
+            p_ingredient_unite);
 END;
 
 -- Ajout des ingrédients
-CALL insert_ingredient_par_type('Pita', 'Pain');
-CALL insert_ingredient_par_type('Galette', 'Pain');
-CALL insert_ingredient_par_type('Buns', 'Pain');
-CALL insert_ingredient_par_type('Salade', 'Légume');
-CALL insert_ingredient_par_type('Tomate', 'Légume');
-CALL insert_ingredient_par_type('Oignons', 'Légume');
-CALL insert_ingredient_par_type('Pommes de terre', 'Légume');
-CALL insert_ingredient_par_type('Boeuf', 'Viande');
-CALL insert_ingredient_par_type('Poulet', 'Viande');
-CALL insert_ingredient_par_type('Ketchup', 'Sauce');
-CALL insert_ingredient_par_type('Mayonnaise', 'Sauce');
-CALL insert_ingredient_par_type('Huile', 'Ingrédient base');
-CALL insert_ingredient_par_type('Sel', 'Ingrédient base');
-CALL insert_ingredient_par_type('Coca', 'Boisson');
-CALL insert_ingredient_par_type('Orangina', 'Boisson');
+CALL insert_ingredient_par_type('Pita', 'Pain', 'Pc');
+CALL insert_ingredient_par_type('Galette', 'Pain', 'Pc');
+CALL insert_ingredient_par_type('Buns', 'Pain', 'Pc');
+CALL insert_ingredient_par_type('Salade', 'Légume', 'g');
+CALL insert_ingredient_par_type('Tomate', 'Légume', 'g');
+CALL insert_ingredient_par_type('Oignons', 'Légume', 'g');
+CALL insert_ingredient_par_type('Pommes de terre', 'Légume', 'g');
+CALL insert_ingredient_par_type('Boeuf', 'Viande', 'g');
+CALL insert_ingredient_par_type('Poulet', 'Viande', 'g');
+CALL insert_ingredient_par_type('Ketchup', 'Sauce', 'ml');
+CALL insert_ingredient_par_type('Mayonnaise', 'Sauce', 'ml');
+CALL insert_ingredient_par_type('Huile', 'Ingrédient base', 'l');
+CALL insert_ingredient_par_type('Sel', 'Ingrédient base', 'g');
+CALL insert_ingredient_par_type('Coca', 'Boisson', 'l');
+CALL insert_ingredient_par_type('Orangina', 'Boisson', 'l');
 
 
 -- Insertion des produits
@@ -222,6 +212,7 @@ BEGIN
             p_volume,
             v_produit_uid,
             v_ingredient_uid);
+    COMMIT;
 END;
 
 
@@ -280,83 +271,165 @@ CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 330);
 CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 330);
 
 
----------------------------------------------------------------------
--- création de 100 clients de manière aléatoire (avec nom1/prenom1)
----------------------------------------------------------------------
+-----------------------
+-- création des clients
+-----------------------
 BEGIN
-    FOR i IN 1..100
-        LOOP
-            DECLARE
-                v_cp    VARCHAR2(5);
-                v_ville VARCHAR2(50);
-            BEGIN
-                -- Choix aléatoire d'un code postal parmi les valeurs spécifiées
-                CASE DBMS_RANDOM.VALUE(1, 5)
-                    WHEN 1 THEN v_cp := '69001';
-                    WHEN 2 THEN v_cp := '69002';
-                    WHEN 3 THEN v_cp := '38780';
-                    WHEN 4 THEN v_cp := '38200';
-                    ELSE v_cp := '69003';
-                    END CASE;
-                -- Attribuer la ville en fonction du code postal
-                CASE
-                    WHEN v_cp LIKE '69%' THEN v_ville := 'Lyon';
-                    WHEN v_cp = '38200' THEN v_ville := 'Vienne';
-                    WHEN v_cp = '38780' THEN v_ville := 'Estrablin';
-                    ELSE v_ville := 'Autre';
-                    END CASE;
+    INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                       client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES (SYS_GUID(), seq_id_client.nextval, 'jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
+            '20 rue des Monts d''Or', '69009', 'Lyon', SYSDATE);
 
-                INSERT INTO client(client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
-                                   client_adresse, client_cp, client_ville, client_date_creation)
-                VALUES (SYS_GUID(), seq_id_client.nextval, 'client' || i || '@example.com', 'Nom' || i, 'Prenom' || i,
-                        '06' || LPAD(dbms_random.value(10000000, 99999999), 8, '0'), 'Rue' || i, v_cp, v_ville,
-                        SYSDATE);
-            EXCEPTION
-                WHEN OTHERS THEN
-                    DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création du client ' || i || ' : ' ||
-                                         SQLERRM);
-            END;
-        END LOOP;
-    COMMIT;
-    DBMS_OUTPUT.PUT_LINE('Les 20 clients ont été créés avec succès.');
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Une erreur est survenue lors de la création des clients : ' || SQLERRM);
-END;
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
+         '32 Avenue du Maréchal Leclerc', '75015', 'Paris', SYSDATE);
 
--- Generation de 500 commandes aléatoires depuis 10 jours
-BEGIN
-    FOR i IN 1..500
-        LOOP
-            DECLARE
-                v_client_name   VARCHAR2(255);
-                v_montant       NUMBER;
-                v_commande_date DATE;
-            BEGIN
-                -- Sélection aléatoire d'un numéro de client entre 1 et 20
-                SELECT 'Nom' || TRUNC(DBMS_RANDOM.VALUE(1, 20))
-                INTO v_client_name
-                FROM dual;
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
+         '12 Rue des Lilas', '33000', 'Bordeaux', SYSDATE);
 
-                -- Génération aléatoire d'une date entre aujourd'hui et il y a 10 jours
-                v_commande_date := TRUNC(SYSDATE - DBMS_RANDOM.VALUE(0, 10));
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
+         '45 Rue Victor Hugo', '44000', 'Nantes', SYSDATE);
 
-                -- Insertion de la commande avec le client correspondant, le montant aléatoire et la date aléatoire
-                INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date)
-                SELECT SYS_GUID(),
-                       seq_id_commande.NEXTVAL,
-                       client_uid,
-                       v_commande_date
-                FROM client
-                WHERE client_name = v_client_name;
-            EXCEPTION
-                WHEN NO_DATA_FOUND THEN
-                    DBMS_OUTPUT.PUT_LINE('Aucun client trouvé.');
-            END;
-        END LOOP;
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
+         '8 Rue Gambetta', '59000', 'Lille', SYSDATE);
+
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
+         '10 Place de la République', '13000', 'Marseille', SYSDATE);
+
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
+         '21 Boulevard des Alpes', '74000', 'Annecy', SYSDATE);
+
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
+         '3 Allée des Bleuets', '80000', 'Amiens', SYSDATE);
+
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
+         '4 Rue des Jardins', '94000', 'Créteil', SYSDATE);
+
+    INSERT INTO client (client_uid, client_id, client_email, client_name, client_prenom, client_telephone,
+                        client_adresse, client_cp, client_ville, client_date_creation)
+    VALUES
+        (SYS_GUID(), seq_id_client.NEXTVAL, 'schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
+         '6 Avenue du Général Leclerc', '67000', 'Strasbourg', SYSDATE);
+
     COMMIT;
 END;
 
+
+-------------------------
+-- création des commandes
+-------------------------
+
+--Procédure d'insert d'une commande en fonction de l'email d'un client, du produit et de sa quantité :
+CREATE OR REPLACE PROCEDURE insert_commande (
+    p_client_email              IN VARCHAR2,
+    p_commande_date             IN DATE,
+    p_produit_nom               IN VARCHAR2,
+    p_quantite_produit_vendue   IN NUMBER
+)
+    IS
+    v_client_uid                VARCHAR2(255);
+    v_produit_uid               VARCHAR2(255);
+    v_commande_uid              VARCHAR2(255);
+BEGIN
+    -- Récupérer l'UID du client en fonction de son email
+    SELECT client_uid INTO v_client_uid
+    FROM client
+    WHERE client_email = p_client_email;
+
+    -- Récupérer l'UID du produit en fonction de son nom
+    SELECT produit_uid INTO v_produit_uid
+    FROM produit
+    WHERE produit_nom = p_produit_nom;
+
+    -- Insérer la commande
+    INSERT INTO commande (commande_uid, commande_id, client_uid, commande_date)
+    VALUES (SYS_GUID(), seq_id_commande.NEXTVAL, v_client_uid, p_commande_date)
+    RETURNING commande_uid INTO v_commande_uid;
+
+    -- Insérer l'entrée dans la table commande_produit
+    INSERT INTO commande_produit (commande_produit_uid, commande_produit_quantite_vendue, commande_uid, produit_uid)
+    VALUES (SYS_GUID(), p_quantite_produit_vendue, v_commande_uid, v_produit_uid);
+    COMMIT;
+END;
+
+CALL insert_commande('jeanmartin@gmail.com', SYSDATE, 'Burger mayonnaise', 1);
+
+
+-------------------------
+-- création des fournisseur
+-------------------------
+
+-- Procédure pour insérer un fournisseur
+CREATE OR REPLACE PROCEDURE insert_fournisseur(
+    p_fournisseur_uid IN VARCHAR2,
+    p_fournisseur_nom IN VARCHAR2,
+    p_fournisseur_email IN VARCHAR2,
+    p_fournisseur_telephone IN VARCHAR,
+    p_fournisseur_adresse IN VARCHAR,
+    p_fournisseur_cp IN VARCHAR,
+    p_fournisseur_ville IN VARCHAR
+) AS
+BEGIN
+    -- Insertion du nouveau fournisseur dans la table
+    INSERT INTO fournisseur (fournisseur_uid,
+                             fournisseur_id,
+                             fournisseur_nom,
+                             fournisseur_email,
+                             fournisseur_telephone,
+                             fournisseur_adresse,
+                             fournisseur_cp,
+                             fournisseur_ville,
+                             fournisseur_date_creation)
+    VALUES (SYS_GUID(),
+            seq_id_fournisseur.nextval,
+            p_fournisseur_nom,
+            p_fournisseur_email,
+            p_fournisseur_telephone,
+            p_fournisseur_adresse,
+            p_fournisseur_cp,
+            p_fournisseur_ville,
+            SYSDATE);
+END insert_fournisseur;
+
+
+
+-- Test d'appel de la procédure
+BEGIN
+    insert_fournisseur(
+            p_fournisseur_uid => SYS_GUID(),
+            p_fournisseur_nom => 'Le grand marché',
+            p_fournisseur_email => 'Le_grand_marche@email.com',
+            p_fournisseur_telephone => '0836656565',
+            p_fournisseur_adresse => '12 place du marché',
+            p_fournisseur_cp => '69001',
+            p_fournisseur_ville => 'Lyon'
+    );
+END;
+
+CALL insert_fournisseur(NULL, 'Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
 --
 -- STATISTIQUES À EXTRAIRE ;
 
@@ -367,4 +440,4 @@ END;
 -- Le nom du client qui a mangé le plus de poulet entre le 19 mars et le 8 mai
 
 
--- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
+-- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
