@@ -687,6 +687,25 @@ FROM
 ORDER BY i.ingredient_id;
 
 
+---------------------------------------------------------------------------
+-- Vues du nombre de produit commandées
+---------------------------------------------------------------------------
+CREATE OR REPLACE VIEW vue_produit_commandes AS
+SELECT *
+FROM (
+    SELECT cp.produit_uid , p.produit_nom
+    FROM commande_produit cp
+             LEFT JOIN produit p ON p.produit_uid = cp.produit_uid
+)
+    PIVOT (
+    COUNT(produit_uid)
+    FOR produit_nom IN (
+        -- Un "SELECT DISTINCT produit_nom FROM produit" a été envisagé, mais ne fonctionne pas dans le pivot,
+        -- il faudrait déclarer la liste en amont
+        'Burger mayonnaise', 'Burger ketchup', 'Tacos', 'Galette poulet', 'Kebab mayonnaise', 'Kebab ketchup', 'Frites', 'Cannette Coca', 'Cannette Orangina'
+        )
+    );
+
 --
 -- STATISTIQUES À EXTRAIRE ;
 -- essai de PR
