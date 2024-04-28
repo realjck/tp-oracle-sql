@@ -1,255 +1,3 @@
--- Supprimer les tables si elles existent
-BEGIN
-    FOR cur_rec IN (SELECT table_name FROM user_tables)
-        LOOP
-            IF cur_rec.table_name IS NOT NULL THEN
-                EXECUTE IMMEDIATE 'DROP TABLE ' || cur_rec.table_name || ' CASCADE CONSTRAINTS';
-            END IF;
-        END LOOP;
-END;
-
--- Supprimer les séquences si elles existent
-BEGIN
-    FOR cur_rec IN (SELECT sequence_name FROM user_sequences)
-        LOOP
-            IF cur_rec.sequence_name IS NOT NULL THEN
-                EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
-            END IF;
-        END LOOP;
-END;
-
--- Supprimer les procédures si elles existent
-BEGIN
-    FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE')
-        LOOP
-            IF cur_rec.object_name IS NOT NULL THEN
-                EXECUTE IMMEDIATE 'DROP PROCEDURE ' || cur_rec.object_name;
-            END IF;
-        END LOOP;
-END;
-
-
-------------------------
--- Creation table client
-------------------------
-CREATE TABLE client
-(
-    client_uid           VARCHAR2(255) PRIMARY KEY,
-    client_id            NUMBER,
-    client_email         VARCHAR(255) DEFAULT 'anonyme' NOT NULL,
-    client_name          VARCHAR2(255),
-    client_prenom        VARCHAR2(255),
-    client_telephone     VARCHAR(255),
-    client_adresse       VARCHAR2(255),
-    client_cp            VARCHAR2(255),
-    client_ville         VARCHAR2(255),
-    client_date_creation DATE
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_client
-    INCREMENT BY 1;
-
-
---------------------------
--- Creation table commande
---------------------------
-CREATE TABLE commande
-(
-    commande_uid     VARCHAR2(255) PRIMARY KEY,
-    commande_id      NUMBER NOT NULL,
-    client_uid       VARCHAR2(255),
-    commande_date    DATE
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_commande
-    INCREMENT BY 1;
-
---Creation d'une clé étrangère
-ALTER TABLE commande
-    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
-        REFERENCES client (client_uid)
-            ENABLE;
-
-
--------------------------
--- Creation table produit
--------------------------
-CREATE TABLE produit
-(
-    produit_uid  VARCHAR2(255) PRIMARY KEY,
-    produit_id   NUMBER        NOT NULL,
-    produit_nom  VARCHAR2(255) NOT NULL,
-    produit_prix NUMBER        NOT NULL
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_produit
-    INCREMENT BY 1;
-
----------------------------------
--- Creation table type_ingredient
----------------------------------
-CREATE TABLE type_ingredient
-(
-    type_ingredient_uid              VARCHAR2(255) PRIMARY KEY,
-    type_ingredient_id               NUMBER        NOT NULL,
-    type_ingredient_nom              VARCHAR2(255) NOT NULL,
-    type_ingredient_duree_peremption NUMBER
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_type_ingredient
-    INCREMENT BY 1;
-
-
-----------------------------
--- Creation table ingredient
-----------------------------
-CREATE TABLE ingredient
-(
-    ingredient_uid      VARCHAR2(255) PRIMARY KEY,
-    type_ingredient_uid VARCHAR2(255),
-    ingredient_id       NUMBER        NOT NULL,
-    ingredient_nom      VARCHAR2(255) NOT NULL,
-    ingredient_unite    VARCHAR2(2) NOT NULL
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_ingredient
-    INCREMENT BY 1;
-
---Creation d'une clé étrangère entre ingredient et type_ingredient
-ALTER TABLE ingredient
-    ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (type_ingredient_uid)
-        REFERENCES type_ingredient (type_ingredient_uid)
-            ENABLE;
-
-
------------------------------
--- Creation table fournisseur
------------------------------
-CREATE TABLE fournisseur
-(
-    fournisseur_uid           VARCHAR2(255) PRIMARY KEY,
-    fournisseur_id            NUMBER        NOT NULL,
-    fournisseur_nom           VARCHAR2(255) NOT NULL,
-    fournisseur_email         VARCHAR2(255) NOT NULL,
-    fournisseur_telephone     VARCHAR(255)  NOT NULL,
-    fournisseur_adresse       VARCHAR(255)  NOT NULL,
-    fournisseur_cp            VARCHAR(255)  NOT NULL,
-    fournisseur_ville         VARCHAR(255)  NOT NULL,
-    fournisseur_date_creation DATE          NOT NULL
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_fournisseur
-    INCREMENT BY 1;
-
-
------------------------
--- Creation table achat
------------------------
-CREATE TABLE achat
-(
-    achat_uid                  VARCHAR2(255) PRIMARY KEY,
-    achat_id                   NUMBER,
-    achat_date                 DATE   NOT NULL,
-    achat_quantite             NUMBER NOT NULL,
-    achat_prix                 NUMBER,
-    fournisseur_ingredient_uid VARCHAR(255)
-);
-
--- Création sequence
-CREATE SEQUENCE seq_id_achat
-    INCREMENT BY 1;
-
-
--------------------------------------------------------
--- Création table de jointure entre commande et produit
--------------------------------------------------------
-CREATE TABLE commande_produit
-(
-    commande_produit_uid             VARCHAR2(255) PRIMARY KEY,
-    commande_produit_quantite_vendue NUMBER,
-    commande_uid                     VARCHAR2(255),
-    produit_uid                      VARCHAR2(255)
-);
-
--- Création clés étrangères entre les trois tables
-ALTER TABLE commande_produit
-    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_uid)
-        REFERENCES commande (commande_uid)
-            ENABLE;
-
-ALTER TABLE commande_produit
-    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (produit_uid)
-        REFERENCES produit (produit_uid)
-            ENABLE;
-
-
----------------------------------------------------------
--- Création table de jointure entre produit et ingredient
----------------------------------------------------------
-CREATE TABLE produit_ingredient
-(
-    produit_ingredient_uid    VARCHAR2(255) PRIMARY KEY,
-    produit_ingredient_volume NUMBER,
-    produit_uid               VARCHAR2(255),
-    ingredient_uid            VARCHAR2(255)
-);
-
--- Création clefs étrangères entre les trois tables
-ALTER TABLE produit_ingredient
-    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_uid)
-        REFERENCES produit (produit_uid)
-            ENABLE;
-
-ALTER TABLE produit_ingredient
-    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (ingredient_uid)
-        REFERENCES ingredient (ingredient_uid)
-            ENABLE;
-
-
--------------------------------------------------------------
--- Création table de jointure entre fournisseur et ingredient
--------------------------------------------------------------
-CREATE TABLE fournisseur_ingredient
-(
-    fournisseur_ingredient_uid VARCHAR2(255) PRIMARY KEY,
-    fournisseur_uid            VARCHAR2(255),
-    ingredient_uid             VARCHAR2(255)
-);
-
--- Création clés étrangères entre les trois tables
-ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_uid)
-        REFERENCES fournisseur (fournisseur_uid)
-            ENABLE;
-
-ALTER TABLE fournisseur_ingredient
-    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (ingredient_uid)
-        REFERENCES ingredient (ingredient_uid)
-            ENABLE;
-
---Creation d'une clé étrangère entre la table achat et fournisseur_ingredient_uid
-ALTER TABLE achat
-    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
-        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
-            ENABLE;
-
-
-
-
-
-
-
-
-
-
-
-
 -- creation d'une procedure pour afficher d'autres procedures :
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'lorem ipsum') AS
 BEGIN
@@ -380,18 +128,18 @@ END;
 CALL insert_ingredient_par_type('Pita', 'Pain', 'Pc');
 CALL insert_ingredient_par_type('Galette', 'Pain', 'Pc');
 CALL insert_ingredient_par_type('Buns', 'Pain', 'Pc');
-CALL insert_ingredient_par_type('Salade', 'Légume', 'g');
-CALL insert_ingredient_par_type('Tomate', 'Légume', 'g');
-CALL insert_ingredient_par_type('Oignons', 'Légume', 'g');
-CALL insert_ingredient_par_type('Pommes de terre', 'Légume', 'g');
-CALL insert_ingredient_par_type('Boeuf', 'Viande', 'g');
-CALL insert_ingredient_par_type('Poulet', 'Viande', 'g');
-CALL insert_ingredient_par_type('Ketchup', 'Sauce', 'ml');
-CALL insert_ingredient_par_type('Mayonnaise', 'Sauce', 'ml');
-CALL insert_ingredient_par_type('Huile', 'Ingrédient base', 'l');
-CALL insert_ingredient_par_type('Sel', 'Ingrédient base', 'g');
-CALL insert_ingredient_par_type('Coca', 'Boisson', 'l');
-CALL insert_ingredient_par_type('Orangina', 'Boisson', 'l');
+CALL insert_ingredient_par_type('Salade', 'Légume', 'kg');
+CALL insert_ingredient_par_type('Tomate', 'Légume', 'kg');
+CALL insert_ingredient_par_type('Oignons', 'Légume', 'kg');
+CALL insert_ingredient_par_type('Pommes de terre', 'Légume', 'kg');
+CALL insert_ingredient_par_type('Boeuf', 'Viande', 'kg');
+CALL insert_ingredient_par_type('Poulet', 'Viande', 'kg');
+CALL insert_ingredient_par_type('Ketchup', 'Sauce', 'L');
+CALL insert_ingredient_par_type('Mayonnaise', 'Sauce', 'L');
+CALL insert_ingredient_par_type('Huile', 'Ingrédient base', 'L');
+CALL insert_ingredient_par_type('Sel', 'Ingrédient base', 'kg');
+CALL insert_ingredient_par_type('Coca', 'Boisson', 'Pc');
+CALL insert_ingredient_par_type('Orangina', 'Boisson', 'Pc');
 
 
 -- Insertion des produits
@@ -426,11 +174,11 @@ VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina', 2.50);
 -- Création de la jointure produit_ingredient (recettes des produits)
 
 
--- Procédure ajoute un ingrédient à un produit selon un certain volume
+-- Procédure ajoute un ingrédient à un produit selon une certaine quantité utilisée
 CREATE OR REPLACE PROCEDURE ajoute_ingredient_produit(
     p_ingredient_nom IN VARCHAR2,
     p_produit_nom IN VARCHAR2,
-    p_volume IN NUMBER
+    p_quantite_utilise IN NUMBER
 ) IS
     v_ingredient_uid VARCHAR2(255);
     v_produit_uid    VARCHAR2(255);
@@ -444,7 +192,7 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20000, 'Ingredient non trouvé : ' || p_ingredient_nom);
     END IF;
 
-    -- Check if product exists
+    -- Vérifie si produit existe
     SELECT produit_uid
     INTO v_produit_uid
     FROM produit
@@ -454,72 +202,73 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20001, 'Produit non trouvé : ' || p_produit_nom);
     END IF;
 
-    -- Insert ingredient with volume into product_ingredient table
+    -- Insert ingrédient avec quantité utilisée dans la table produit_ingredient
     INSERT INTO produit_ingredient (produit_ingredient_uid,
-                                    produit_ingredient_volume,
+                                    produit_ingredient_quantite_utilise,
                                     produit_uid,
                                     ingredient_uid)
     VALUES (SYS_GUID(),
-            p_volume,
+            p_quantite_utilise,
             v_produit_uid,
             v_ingredient_uid);
     COMMIT;
 END;
 
 
-CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 150);
-CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Burger mayonnaise', 25);
-CALL ajoute_ingredient_produit('Boeuf', 'Burger mayonnaise', 150);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Burger mayonnaise', 25);
+CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 1);
+CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Burger mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Boeuf', 'Burger mayonnaise', 0.15);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Burger mayonnaise', 0.025);
 
-CALL ajoute_ingredient_produit('Buns', 'Burger ketchup', 150);
-CALL ajoute_ingredient_produit('Salade', 'Burger ketchup', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Burger ketchup', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Burger ketchup', 25);
-CALL ajoute_ingredient_produit('Boeuf', 'Burger ketchup', 150);
-CALL ajoute_ingredient_produit('Ketchup', 'Burger ketchup', 25);
+CALL ajoute_ingredient_produit('Buns', 'Burger ketchup', 1);
+CALL ajoute_ingredient_produit('Salade', 'Burger ketchup', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Burger ketchup', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Burger ketchup', 0.025);
+CALL ajoute_ingredient_produit('Boeuf', 'Burger ketchup', 0.15);
+CALL ajoute_ingredient_produit('Ketchup', 'Burger ketchup', 0.025);
 
-CALL ajoute_ingredient_produit('Galette', 'Tacos', 100);
-CALL ajoute_ingredient_produit('Salade', 'Tacos', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Tacos', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Tacos', 25);
-CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 75);
-CALL ajoute_ingredient_produit('Poulet', 'Tacos', 75);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', 25);
-CALL ajoute_ingredient_produit('Ketchup', 'Tacos', 25);
+CALL ajoute_ingredient_produit('Galette', 'Tacos', 1);
+CALL ajoute_ingredient_produit('Pommes de terre', 'Tacos', 0.1);
+CALL ajoute_ingredient_produit('Salade', 'Tacos', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Tacos', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Tacos', 0.025);
+CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 0.25);
+CALL ajoute_ingredient_produit('Poulet', 'Tacos', 0.25);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', 0.025);
+CALL ajoute_ingredient_produit('Ketchup', 'Tacos', 0.025);
 
-CALL ajoute_ingredient_produit('Galette', 'Galette poulet', 100);
-CALL ajoute_ingredient_produit('Salade', 'Galette poulet', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Galette poulet', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Galette poulet', 25);
-CALL ajoute_ingredient_produit('Poulet', 'Galette poulet', 150);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Galette poulet', 25);
+CALL ajoute_ingredient_produit('Galette', 'Galette poulet', 1);
+CALL ajoute_ingredient_produit('Salade', 'Galette poulet', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Galette poulet', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Galette poulet', 0.025);
+CALL ajoute_ingredient_produit('Poulet', 'Galette poulet', 0.25);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Galette poulet', 0.025);
 
-CALL ajoute_ingredient_produit('Pita', 'Kebab mayonnaise', 150);
-CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', 25);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 75);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 75);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', 25);
+CALL ajoute_ingredient_produit('Pita', 'Kebab mayonnaise', 1);
+CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 0.15);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 0.15);
+CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', 0.025);
 
-CALL ajoute_ingredient_produit('Pita', 'Kebab ketchup', 150);
-CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', 25);
-CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', 25);
-CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 25);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 75);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 75);
-CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 25);
+CALL ajoute_ingredient_produit('Pita', 'Kebab ketchup', 1);
+CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', 0.025);
+CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', 0.025);
+CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 0.025);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 0.15);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 0.15);
+CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 0.025);
 
-CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', 150);
-CALL ajoute_ingredient_produit('Huile', 'Frites', 20);
-CALL ajoute_ingredient_produit('Sel', 'Frites', 2);
+CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', 0.15);
+CALL ajoute_ingredient_produit('Huile', 'Frites', 0.020);
+CALL ajoute_ingredient_produit('Sel', 'Frites', 0.002);
 
-CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 330);
+CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 1);
 
-CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 330);
+CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 1);
 
 
 -------------------------
@@ -686,9 +435,9 @@ CALL insert_commande(15,'popov.ivan@laposte.fr',
                      'Frites', 2);
 
 
--------------------------
+----------------------------
 -- création des fournisseurs
--------------------------
+----------------------------
 
 -- Procédure pour insérer un fournisseur
 CREATE OR REPLACE PROCEDURE insert_fournisseur(
@@ -722,8 +471,6 @@ BEGIN
     COMMIT;
 END insert_fournisseur;
 
-
-
 -- Test d'appel de la procédure
 BEGIN
     insert_fournisseur(
@@ -743,16 +490,30 @@ BEGIN insert_fournisseur(
     ,'2 chemin de l''alouette'
     ,'42100','Saint Etienne');
 END;
-CALL insert_fournisseur('Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
-CALL insert_fournisseur('Le fermier d''ici', 'fermierdici@email.com', '0625434321', '453 rue plantée', '69101','Lyon');
-CALL insert_fournisseur('Le fermier de demain', 'fermierdedemain@email.com', '0645543793', '4098 rue de l''avenir', '69101','Lyon');
-CALL insert_fournisseur('Le campagnard de l''amour', 'campagnarddelamour@email.com', '0625434321', '43 rue du coeur', '69101','Lyon');
-CALL insert_fournisseur('Le légume de rêve', 'legumedereve@email.com', '0658473849', '853 rue des cyprès', '38200','Vienne');
+CALL insert_fournisseur('Le fermier local', 'fermierlocal@free.fr',
+                        '0625485621', '4 rue du marché',
+                        '69100','Villeurbanne');
+
+CALL insert_fournisseur('Miam Miam & Compagnie', 'miametcie@lycos.fr',
+                        '0625434321', '453 rue plantée',
+                        '69101','Lyon');
+
+CALL insert_fournisseur('L''agriculteur de demain', 'agriculteurdedemain@yahoo.com',
+                        '0645543793', '4098 rue de l''avenir',
+                        '69101','Lyon');
+
+CALL insert_fournisseur('Le campagnard de l''amour', 'campagnarddelamour@sfr.fr',
+                        '0625434321', '43 rue du coeur',
+                        '69101','Lyon');
+
+CALL insert_fournisseur('Aqua Soda', 'cepadelo@aquasoda.com',
+                        '0658473849', '853 rue des cyprès',
+                        '38200','Vienne');
 
 
-------------------------------------------------
--- Création de la table fournisseur_ingredient--//////////////////////////////////////////
-------------------------------------------------
+----------------------------------------------
+-- Création de la table fournisseur_ingredient
+----------------------------------------------
 
 CREATE OR REPLACE PROCEDURE insert_fournisseur_ingredient (
     p_fournisseur_nom IN VARCHAR2,
@@ -783,90 +544,79 @@ EXCEPTION
         ROLLBACK;
         DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
 END;
-/
-// insertion de valeurs dans la table fournisseur_ingredients
+
+-- Insertion de valeurs dans la table fournisseur_ingredients
 CALL insert_fournisseur_ingredient('Le grand marché', 'Pita');
 CALL insert_fournisseur_ingredient('Le grand marché', 'Galette');
 CALL insert_fournisseur_ingredient('Le grand marché', 'Buns');
 CALL insert_fournisseur_ingredient('Le grand marché', 'Salade');
 CALL insert_fournisseur_ingredient('Le grand marché', 'Tomate');
-CALL insert_fournisseur_ingredient('Le grand marché', 'Oignons');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Pita');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Galette');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Buns');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Salade');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Tomate');
-CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Oignons');
-CALL insert_fournisseur_ingredient('Le fermier de demain', 'Boeuf');
-CALL insert_fournisseur_ingredient('Le fermier de demain', 'Poulet');
-CALL insert_fournisseur_ingredient('Le fermier de demain', 'Ketchup');
-CALL insert_fournisseur_ingredient('Le fermier de demain', 'Mayonnaise');
+CALL insert_fournisseur_ingredient('Le fermier local', 'Oignons');
+CALL insert_fournisseur_ingredient('Le fermier local', 'Pommes de terre');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Pita');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Galette');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Buns');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Salade');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Ketchup');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Mayonnaise');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Huile');
+CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Sel');
+CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Boeuf');
+CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Poulet');
+CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Ketchup');
+CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Mayonnaise');
+CALL insert_fournisseur_ingredient('Aqua Soda', 'Coca');
+CALL insert_fournisseur_ingredient('Aqua Soda', 'Orangina');
 
 
--------------------------
+----------------------
 -- création des achats
--------------------------
+----------------------
 
--- Procédure pour insérer un achat en fonction de l'ingredient fournisseur
+-- Procédure pour insérer un achat en fonction du fournisseur, de l'ingrédient, de la quantité et du prix d'achat
 CREATE OR REPLACE PROCEDURE insert_achat(
-    p_achat_date IN DATE,
-    p_achat_quantite IN NUMBER,
-    p_achat_prix IN NUMBER
-)
-    IS
-    v_fournisseur_ingredient_uid  VARCHAR2(255);
-
+    p_fournisseur_nom             IN VARCHAR2,
+    p_ingredient_nom                 IN VARCHAR2,
+    p_quantite                    IN NUMBER,
+    p_prix                        IN NUMBER
+) AS
+    v_fournisseur_uid VARCHAR2(255);
+    v_ingredient_uid VARCHAR2(255);
 BEGIN
-    -- Récupérer l'UID du fournisseur_ingredient en fonction de l'ingrédient
-    IF p_fournisseur_ingredient IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Produit non trouvé pour le nom spécifié.');
-    ELSE
-        SELECT fournisseur_ingredient_uid INTO v_fournisseur_ingredient_uid
-        FROM fournisseur_ingredient
-        WHERE ingredient_uid = p_ingredient_uid;
-    END IF;
+    -- Récupérer l'identifiant du fournisseur en fonction de son nom
+    SELECT fournisseur_uid INTO v_fournisseur_uid
+    FROM fournisseur
+    WHERE fournisseur_nom = p_fournisseur_nom;
 
-    -- Insertion du nouvel achat dans la table
-    INSERT INTO achat (achat_uid,
-                       achat_id,
-                       achat_date,
-                       achat_quantite,
-                       achat_prix,
-                       fournisseur_ingredient_uid
-    )
-    VALUES (SYS_GUID(),
-            seq_id_achat.nextval,
-            p_achat_date,
-            p_achat_quantite,
-            p_achat_prix,
-            v_fournisseur_ingredient_uid
-           );
+    -- Récupérer l'identifiant du produit en fonction de son nom
+    SELECT ingredient_uid INTO v_ingredient_uid
+    FROM ingredient
+    WHERE ingredient_nom = p_ingredient_nom;
+
+    -- Insérer l'achat dans la table achat
+    INSERT INTO achat (achat_uid, achat_id, achat_date, achat_quantite, achat_prix_unite, fournisseur_ingredient_uid)
+    VALUES (SYS_GUID(), seq_id_achat.NEXTVAL, SYSDATE, p_quantite, p_prix,
+            (SELECT fournisseur_ingredient_uid FROM fournisseur_ingredient
+             WHERE fournisseur_uid = v_fournisseur_uid AND ingredient_uid = v_ingredient_uid));
+
     COMMIT;
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
-END insert_achat;
-
--- Test d'appel de la procédure
-BEGIN
-    insert_achat(
-            p_achat_date => SYSDATE - 6,
-            p_achat_quantite => 200,
-            p_achat_prix => 40
-    );
 END;
 
-CALL insert_achat(
-                SYSDATE - 3,
-                50,
-                (SELECT fournisseur_ingredient_uid
-                 FROM fournisseur_ingredient
-                 WHERE fournisseur_nom = 'Le grand marché' AND ingredient_nom = 'Pita')
-     );
-END;
-
-
+CALL insert_achat('Le grand marché', 'Pita', 20, 0.6);
+CALL insert_achat('Le grand marché', 'Galette', 20, 0.4);
+CALL insert_achat('Miam Miam & Compagnie', 'Buns', 30, 1.2);
+CALL insert_achat('Le grand marché', 'Salade', 5, 2.50);
+CALL insert_achat('Le grand marché', 'Tomate', 5, 3.20);
+CALL insert_achat('Le fermier local', 'Oignons', 5, 2.80);
+CALL insert_achat('Le fermier local', 'Pommes de terre', 20, 1.10);
+CALL insert_achat('L''agriculteur de demain', 'Boeuf', 10, 25.80);
+CALL insert_achat('L''agriculteur de demain', 'Poulet', 8, 18.50);
+CALL insert_achat('Miam Miam & Compagnie', 'Ketchup', 3, 3.50);
+CALL insert_achat('Miam Miam & Compagnie', 'Mayonnaise', 3, 3.20);
+CALL insert_achat('Miam Miam & Compagnie', 'Huile', 8, 2.80);
+CALL insert_achat('Miam Miam & Compagnie', 'Sel', 2, 0.80);
+CALL insert_achat('Aqua Soda', 'Coca', 50, 0.40);
+CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 
 --
 -- STATISTIQUES À EXTRAIRE ;
