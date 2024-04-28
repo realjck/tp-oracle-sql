@@ -13,7 +13,7 @@ END DBMS;
 -- Procédure d'ajout d'un client
 CREATE OR REPLACE PROCEDURE insert_client(
     i_client_email IN VARCHAR2,
-    i_client_name IN VARCHAR2,
+    i_client_nom IN VARCHAR2,
     i_client_prenom IN VARCHAR2,
     i_client_telephone IN VARCHAR2,
     i_client_adresse IN VARCHAR2,
@@ -34,7 +34,7 @@ BEGIN
     VALUES (SYS_GUID(),
             SEQ_ID_CLIENT.nextval,
             i_client_email,
-            i_client_name,
+            i_client_nom,
             i_client_prenom,
             i_client_telephone,
             i_client_adresse,
@@ -619,15 +619,13 @@ CALL insert_achat('Aqua Soda', 'Coca', 50, 0.40);
 CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 
 
-
-
 ----------------------
 -- création des Vues
 ----------------------
 
------------
+---------------------------------------------------------------------------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
------------
+---------------------------------------------------------------------------
 
 -- Création de la vue
 CREATE OR REPLACE VIEW commande_client_ingredient AS
@@ -652,10 +650,41 @@ GROUP BY
 SELECT * FROM commande_client_ingredient;
 
 
-
-
-
-
+-----------------------------------------
+-- Vue de l'état du stock des ingrédients
+-----------------------------------------
+CREATE OR REPLACE VIEW vue_ingredients_stock AS
+SELECT
+    i.ingredient_id,
+    i.ingredient_nom,
+    i.ingredient_unite,
+    COALESCE(achete.quantite_achetee, 0) AS quantite_achetee,
+    COALESCE(utilise.quantite_utilisee, 0) AS quantite_utilisee,
+    COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0) AS stock_restant
+FROM
+    ingredient i
+        LEFT JOIN (
+        SELECT
+            pi.ingredient_uid,
+            SUM(pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue) AS quantite_utilisee
+        FROM
+            produit_ingredient pi
+                JOIN commande_produit cp ON pi.produit_uid = cp.produit_uid
+                JOIN commande c ON cp.commande_uid = c.commande_uid
+        GROUP BY
+            pi.ingredient_uid
+    ) utilise ON i.ingredient_uid = utilise.ingredient_uid
+        LEFT JOIN (
+        SELECT
+            fi.ingredient_uid,
+            SUM(a.achat_quantite) AS quantite_achetee
+        FROM
+            fournisseur_ingredient fi
+                JOIN achat a ON fi.fournisseur_ingredient_uid = a.fournisseur_ingredient_uid
+        GROUP BY
+            fi.ingredient_uid
+    ) achete ON i.ingredient_uid = achete.ingredient_uid
+ORDER BY i.ingredient_id;
 
 
 --
