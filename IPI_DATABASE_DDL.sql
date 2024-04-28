@@ -37,7 +37,7 @@ CREATE TABLE client
     client_uid           VARCHAR2(255) PRIMARY KEY,
     client_id            NUMBER,
     client_email         VARCHAR(255) DEFAULT 'anonyme' NOT NULL,
-    client_name          VARCHAR2(255),
+    client_nom           VARCHAR2(255),
     client_prenom        VARCHAR2(255),
     client_telephone     VARCHAR(255),
     client_adresse       VARCHAR2(255),
