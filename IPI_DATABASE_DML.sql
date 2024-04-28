@@ -700,7 +700,7 @@ FROM (
     PIVOT (
     COUNT(produit_uid)
     FOR produit_nom IN (
-        -- Un "SELECT DISTINCT produit_nom FROM produit" à été envisagé, mais ne fonctionne pas dans le pivot,
+        -- Un "SELECT DISTINCT produit_nom FROM produit" a été envisagé, mais ne fonctionne pas dans le pivot,
         -- il faudrait déclarer la liste en amont
         'Burger mayonnaise', 'Burger ketchup', 'Tacos', 'Galette poulet', 'Kebab mayonnaise', 'Kebab ketchup', 'Frites', 'Cannette Coca', 'Cannette Orangina'
         )
