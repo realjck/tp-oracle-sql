@@ -24,7 +24,7 @@ BEGIN
     INSERT INTO client (client_uid,
                         client_id,
                         client_email,
-                        client_name,
+                        client_nom,
                         client_prenom,
                         client_telephone,
                         client_adresse,
@@ -617,6 +617,22 @@ CALL insert_achat('Miam Miam & Compagnie', 'Huile', 8, 2.80);
 CALL insert_achat('Miam Miam & Compagnie', 'Sel', 2, 0.80);
 CALL insert_achat('Aqua Soda', 'Coca', 50, 0.40);
 CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
+
+
+
+
+----------------------
+-- création des Vues
+----------------------
+
+-- Vues Commande par client avec ingrédients utilisé pour faire la commande
+
+
+
+
+
+
+
 
 --
 -- STATISTIQUES À EXTRAIRE ;
