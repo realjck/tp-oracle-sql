@@ -626,8 +626,6 @@ CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 ---------------------------------------------------------------------------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
 ---------------------------------------------------------------------------
-
--- Création de la vue
 CREATE OR REPLACE VIEW commande_client_ingredient AS
 SELECT
     c.client_nom,
@@ -755,15 +753,21 @@ FROM ingredient i
 GROUP BY c.commande_id;
 
 
---
--- STATISTIQUES À EXTRAIRE ;
--- essai de PR
-
--- Quel stock j’ai dans tel produit
-
--- Quand ai-je acheté de la viande pour la dernière fois
-
--- Le nom du client qui a mangé le plus de poulet entre le 19 mars et le 8 mai
-
-
--- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
+--------------------------------------
+-- Vues du nombre de produit commandés
+--------------------------------------
+CREATE OR REPLACE VIEW vue_produit_commandes AS
+SELECT *
+FROM (
+    SELECT cp.produit_uid , p.produit_nom
+    FROM commande_produit cp
+             LEFT JOIN produit p ON p.produit_uid = cp.produit_uid
+)
+    PIVOT (
+    COUNT(produit_uid)
+    FOR produit_nom IN (
+        -- Un "SELECT DISTINCT produit_nom FROM produit" a été envisagé, mais ne fonctionne pas dans le pivot,
+        -- il faudrait déclarer la liste en amont
+        'Burger mayonnaise', 'Burger ketchup', 'Tacos', 'Galette poulet', 'Kebab mayonnaise', 'Kebab ketchup', 'Frites', 'Cannette Coca', 'Cannette Orangina'
+        )
+    );
