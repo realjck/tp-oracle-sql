@@ -639,9 +639,9 @@ SELECT
     LISTAGG(p.produit_nom, ', ') WITHIN GROUP (ORDER BY p.produit_nom) AS produits,
     SUM(p.produit_prix) AS total_prix
 FROM commande co
-         JOIN client c ON co.client_uid = c.client_uid
-         JOIN commande_produit cp ON co.commande_uid = cp.commande_uid
-         JOIN produit p ON cp.produit_uid = p.produit_uid
+         LEFT JOIN client c ON co.client_uid = c.client_uid
+         LEFT JOIN commande_produit cp ON co.commande_uid = cp.commande_uid
+         LEFT JOIN produit p ON cp.produit_uid = p.produit_uid
 GROUP BY
     c.client_nom,
     c.client_prenom,
