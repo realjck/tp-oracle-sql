@@ -632,8 +632,8 @@ SELECT
     c.client_prenom,
     co.commande_id,
     co.commande_date,
-    LISTAGG(p.produit_nom, ', ') WITHIN GROUP (ORDER BY p.produit_nom) AS produits,
-    SUM(p.produit_prix) AS total_prix
+    LISTAGG(p.produit_nom, ', ') AS produits,
+    SUM(p.produit_prix * cp.COMMANDE_PRODUIT_QUANTITE_VENDUE) AS total_prix
 FROM commande co
          LEFT JOIN client c ON co.client_uid = c.client_uid
          LEFT JOIN commande_produit cp ON co.commande_uid = cp.commande_uid
@@ -644,9 +644,6 @@ GROUP BY
     co.commande_id,
     co.commande_date
 ORDER BY co.commande_id;
-
--- Affichage de la vue
-SELECT * FROM commande_client_ingredient;
 
 
 -----------------------------------------
