@@ -642,7 +642,8 @@ GROUP BY
     c.client_nom,
     c.client_prenom,
     co.commande_id,
-    co.commande_date;
+    co.commande_date
+ORDER BY co.commande_id;
 
 -- Affichage de la vue
 SELECT * FROM commande_client_ingredient;
@@ -757,17 +758,36 @@ GROUP BY c.commande_id;
 -- Vues du nombre de produit commandés
 --------------------------------------
 CREATE OR REPLACE VIEW vue_produit_commandes AS
-SELECT *
+SELECT commande_id,
+       SUM(NVL(burger_mayonnaise,0)) AS burger_mayonnaise,
+       SUM(NVL(burger_ketchup,0)) AS burger_ketchup,
+       SUM(NVL(tacos,0)) AS tacos,
+       SUM(NVL(galette_poulet,0)) AS galette_poulet,
+       SUM(NVL(kebab_mayonnaise,0)) AS kebab_mayonnaise,
+       SUM(NVL(kebab_ketchup,0)) AS kebab_ketchup,
+       SUM(NVL(frites,0)) AS frites,
+       SUM(NVL(cannette_coca,0)) AS cannette_coca,
+       SUM(NVL(cannette_orangina,0)) AS cannette_orangina
 FROM (
-    SELECT cp.produit_uid , p.produit_nom
+    SELECT c.commande_id, cp.commande_uid, cp.produit_uid,
+           cp.commande_produit_quantite_vendue,
+           p.produit_nom
     FROM commande_produit cp
              LEFT JOIN produit p ON p.produit_uid = cp.produit_uid
+             LEFT JOIN commande c ON c.commande_uid = cp.commande_uid
 )
     PIVOT (
-    COUNT(produit_uid)
+    SUM(nvl(commande_produit_quantite_vendue, 0))
     FOR produit_nom IN (
-        -- Un "SELECT DISTINCT produit_nom FROM produit" a été envisagé, mais ne fonctionne pas dans le pivot,
-        -- il faudrait déclarer la liste en amont
-        'Burger mayonnaise', 'Burger ketchup', 'Tacos', 'Galette poulet', 'Kebab mayonnaise', 'Kebab ketchup', 'Frites', 'Cannette Coca', 'Cannette Orangina'
+        'Burger mayonnaise' AS burger_mayonnaise,
+        'Burger ketchup' AS burger_ketchup,
+        'Tacos' AS tacos,
+        'Galette poulet' AS galette_poulet,
+        'Kebab mayonnaise' AS kebab_mayonnaise,
+        'Kebab ketchup' AS kebab_ketchup,
+        'Frites' AS frites,
+        'Cannette Coca' AS cannette_coca,
+        'Cannette Orangina' AS cannette_orangina
         )
-    );
+    )
+GROUP BY commande_id;
