@@ -788,3 +788,10 @@ FROM (
         )
     )
 GROUP BY commande_id;
+
+
+-- TODO:
+-- [ ] Procédure de mise à jour des données clients en fournissant leur id
+-- [ ] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
+-- [ ] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
+-- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
