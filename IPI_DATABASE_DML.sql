@@ -1,3 +1,255 @@
+-- Supprimer les tables si elles existent
+BEGIN
+    FOR cur_rec IN (SELECT table_name FROM user_tables)
+        LOOP
+            IF cur_rec.table_name IS NOT NULL THEN
+                EXECUTE IMMEDIATE 'DROP TABLE ' || cur_rec.table_name || ' CASCADE CONSTRAINTS';
+            END IF;
+        END LOOP;
+END;
+
+-- Supprimer les séquences si elles existent
+BEGIN
+    FOR cur_rec IN (SELECT sequence_name FROM user_sequences)
+        LOOP
+            IF cur_rec.sequence_name IS NOT NULL THEN
+                EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
+            END IF;
+        END LOOP;
+END;
+
+-- Supprimer les procédures si elles existent
+BEGIN
+    FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE')
+        LOOP
+            IF cur_rec.object_name IS NOT NULL THEN
+                EXECUTE IMMEDIATE 'DROP PROCEDURE ' || cur_rec.object_name;
+            END IF;
+        END LOOP;
+END;
+
+
+------------------------
+-- Creation table client
+------------------------
+CREATE TABLE client
+(
+    client_uid           VARCHAR2(255) PRIMARY KEY,
+    client_id            NUMBER,
+    client_email         VARCHAR(255) DEFAULT 'anonyme' NOT NULL,
+    client_name          VARCHAR2(255),
+    client_prenom        VARCHAR2(255),
+    client_telephone     VARCHAR(255),
+    client_adresse       VARCHAR2(255),
+    client_cp            VARCHAR2(255),
+    client_ville         VARCHAR2(255),
+    client_date_creation DATE
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_client
+    INCREMENT BY 1;
+
+
+--------------------------
+-- Creation table commande
+--------------------------
+CREATE TABLE commande
+(
+    commande_uid     VARCHAR2(255) PRIMARY KEY,
+    commande_id      NUMBER NOT NULL,
+    client_uid       VARCHAR2(255),
+    commande_date    DATE
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_commande
+    INCREMENT BY 1;
+
+--Creation d'une clé étrangère
+ALTER TABLE commande
+    ADD CONSTRAINT commande_client_fk FOREIGN KEY (client_uid)
+        REFERENCES client (client_uid)
+            ENABLE;
+
+
+-------------------------
+-- Creation table produit
+-------------------------
+CREATE TABLE produit
+(
+    produit_uid  VARCHAR2(255) PRIMARY KEY,
+    produit_id   NUMBER        NOT NULL,
+    produit_nom  VARCHAR2(255) NOT NULL,
+    produit_prix NUMBER        NOT NULL
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_produit
+    INCREMENT BY 1;
+
+---------------------------------
+-- Creation table type_ingredient
+---------------------------------
+CREATE TABLE type_ingredient
+(
+    type_ingredient_uid              VARCHAR2(255) PRIMARY KEY,
+    type_ingredient_id               NUMBER        NOT NULL,
+    type_ingredient_nom              VARCHAR2(255) NOT NULL,
+    type_ingredient_duree_peremption NUMBER
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_type_ingredient
+    INCREMENT BY 1;
+
+
+----------------------------
+-- Creation table ingredient
+----------------------------
+CREATE TABLE ingredient
+(
+    ingredient_uid      VARCHAR2(255) PRIMARY KEY,
+    type_ingredient_uid VARCHAR2(255),
+    ingredient_id       NUMBER        NOT NULL,
+    ingredient_nom      VARCHAR2(255) NOT NULL,
+    ingredient_unite    VARCHAR2(2) NOT NULL
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_ingredient
+    INCREMENT BY 1;
+
+--Creation d'une clé étrangère entre ingredient et type_ingredient
+ALTER TABLE ingredient
+    ADD CONSTRAINT ingredient_type_ingredient_fk FOREIGN KEY (type_ingredient_uid)
+        REFERENCES type_ingredient (type_ingredient_uid)
+            ENABLE;
+
+
+-----------------------------
+-- Creation table fournisseur
+-----------------------------
+CREATE TABLE fournisseur
+(
+    fournisseur_uid           VARCHAR2(255) PRIMARY KEY,
+    fournisseur_id            NUMBER        NOT NULL,
+    fournisseur_nom           VARCHAR2(255) NOT NULL,
+    fournisseur_email         VARCHAR2(255) NOT NULL,
+    fournisseur_telephone     VARCHAR(255)  NOT NULL,
+    fournisseur_adresse       VARCHAR(255)  NOT NULL,
+    fournisseur_cp            VARCHAR(255)  NOT NULL,
+    fournisseur_ville         VARCHAR(255)  NOT NULL,
+    fournisseur_date_creation DATE          NOT NULL
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_fournisseur
+    INCREMENT BY 1;
+
+
+-----------------------
+-- Creation table achat
+-----------------------
+CREATE TABLE achat
+(
+    achat_uid                  VARCHAR2(255) PRIMARY KEY,
+    achat_id                   NUMBER,
+    achat_date                 DATE   NOT NULL,
+    achat_quantite             NUMBER NOT NULL,
+    achat_prix                 NUMBER,
+    fournisseur_ingredient_uid VARCHAR(255)
+);
+
+-- Création sequence
+CREATE SEQUENCE seq_id_achat
+    INCREMENT BY 1;
+
+
+-------------------------------------------------------
+-- Création table de jointure entre commande et produit
+-------------------------------------------------------
+CREATE TABLE commande_produit
+(
+    commande_produit_uid             VARCHAR2(255) PRIMARY KEY,
+    commande_produit_quantite_vendue NUMBER,
+    commande_uid                     VARCHAR2(255),
+    produit_uid                      VARCHAR2(255)
+);
+
+-- Création clés étrangères entre les trois tables
+ALTER TABLE commande_produit
+    ADD CONSTRAINT commande_produit_fk FOREIGN KEY (commande_uid)
+        REFERENCES commande (commande_uid)
+            ENABLE;
+
+ALTER TABLE commande_produit
+    ADD CONSTRAINT produit_commande_fk FOREIGN KEY (produit_uid)
+        REFERENCES produit (produit_uid)
+            ENABLE;
+
+
+---------------------------------------------------------
+-- Création table de jointure entre produit et ingredient
+---------------------------------------------------------
+CREATE TABLE produit_ingredient
+(
+    produit_ingredient_uid    VARCHAR2(255) PRIMARY KEY,
+    produit_ingredient_volume NUMBER,
+    produit_uid               VARCHAR2(255),
+    ingredient_uid            VARCHAR2(255)
+);
+
+-- Création clefs étrangères entre les trois tables
+ALTER TABLE produit_ingredient
+    ADD CONSTRAINT produit_ingredient_fk FOREIGN KEY (produit_uid)
+        REFERENCES produit (produit_uid)
+            ENABLE;
+
+ALTER TABLE produit_ingredient
+    ADD CONSTRAINT ingredient_produit_fk FOREIGN KEY (ingredient_uid)
+        REFERENCES ingredient (ingredient_uid)
+            ENABLE;
+
+
+-------------------------------------------------------------
+-- Création table de jointure entre fournisseur et ingredient
+-------------------------------------------------------------
+CREATE TABLE fournisseur_ingredient
+(
+    fournisseur_ingredient_uid VARCHAR2(255) PRIMARY KEY,
+    fournisseur_uid            VARCHAR2(255),
+    ingredient_uid             VARCHAR2(255)
+);
+
+-- Création clés étrangères entre les trois tables
+ALTER TABLE fournisseur_ingredient
+    ADD CONSTRAINT fournisseur_ingredient_fk FOREIGN KEY (fournisseur_uid)
+        REFERENCES fournisseur (fournisseur_uid)
+            ENABLE;
+
+ALTER TABLE fournisseur_ingredient
+    ADD CONSTRAINT ingredient_fournisseur_fk FOREIGN KEY (ingredient_uid)
+        REFERENCES ingredient (ingredient_uid)
+            ENABLE;
+
+--Creation d'une clé étrangère entre la table achat et fournisseur_ingredient_uid
+ALTER TABLE achat
+    ADD CONSTRAINT achat_fournisseur_ingredient_fk FOREIGN KEY (fournisseur_ingredient_uid)
+        REFERENCES fournisseur_ingredient (fournisseur_ingredient_uid)
+            ENABLE;
+
+
+
+
+
+
+
+
+
+
+
+
 -- creation d'une procedure pour afficher d'autres procedures :
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'lorem ipsum') AS
 BEGIN
@@ -172,6 +424,7 @@ VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina', 2.50);
 
 
 -- Création de la jointure produit_ingredient (recettes des produits)
+
 
 -- Procédure ajoute un ingrédient à un produit selon un certain volume
 CREATE OR REPLACE PROCEDURE ajoute_ingredient_produit(
@@ -434,7 +687,7 @@ CALL insert_commande(15,'popov.ivan@laposte.fr',
 
 
 -------------------------
--- création des fournisseur
+-- création des fournisseurs
 -------------------------
 
 -- Procédure pour insérer un fournisseur
@@ -483,10 +736,141 @@ BEGIN
     );
 END;
 
+BEGIN insert_fournisseur(
+        'Le champs des possible'
+    , 'lechampdespossible@hotmail.fr'
+    , '0643545625'
+    ,'2 chemin de l''alouette'
+    ,'42100','Saint Etienne');
+END;
 CALL insert_fournisseur('Le fermier local', 'fermierlocal@email.com', '0625485621', '4 rue du marché', '69100','Villeurbanne');
+CALL insert_fournisseur('Le fermier d''ici', 'fermierdici@email.com', '0625434321', '453 rue plantée', '69101','Lyon');
+CALL insert_fournisseur('Le fermier de demain', 'fermierdedemain@email.com', '0645543793', '4098 rue de l''avenir', '69101','Lyon');
+CALL insert_fournisseur('Le campagnard de l''amour', 'campagnarddelamour@email.com', '0625434321', '43 rue du coeur', '69101','Lyon');
+CALL insert_fournisseur('Le légume de rêve', 'legumedereve@email.com', '0658473849', '853 rue des cyprès', '38200','Vienne');
+
+
+------------------------------------------------
+-- Création de la table fournisseur_ingredient--//////////////////////////////////////////
+------------------------------------------------
+
+CREATE OR REPLACE PROCEDURE insert_fournisseur_ingredient (
+    p_fournisseur_nom IN VARCHAR2,
+    p_ingredient_nom IN VARCHAR2
+) IS
+    v_fournisseur_uid VARCHAR2(255);
+    v_ingredient_uid VARCHAR2(255);
+BEGIN
+    -- Récupérer l'UID du fournisseur en fonction de son nom
+    SELECT fournisseur_uid INTO v_fournisseur_uid
+    FROM fournisseur
+    WHERE fournisseur_nom = p_fournisseur_nom;
+
+    -- Récupérer l'UID de l'ingrédient en fonction de son nom
+    SELECT ingredient_uid INTO v_ingredient_uid
+    FROM ingredient
+    WHERE ingredient_nom = p_ingredient_nom;
+
+    -- Insérer dans la table fournisseur_ingredient
+    INSERT INTO fournisseur_ingredient (fournisseur_ingredient_uid, fournisseur_uid, ingredient_uid)
+    VALUES (SYS_GUID(), v_fournisseur_uid, v_ingredient_uid);
+
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Nom de fournisseur ou d''ingrédient invalide.');
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
+END;
+/
+// insertion de valeurs dans la table fournisseur_ingredients
+CALL insert_fournisseur_ingredient('Le grand marché', 'Pita');
+CALL insert_fournisseur_ingredient('Le grand marché', 'Galette');
+CALL insert_fournisseur_ingredient('Le grand marché', 'Buns');
+CALL insert_fournisseur_ingredient('Le grand marché', 'Salade');
+CALL insert_fournisseur_ingredient('Le grand marché', 'Tomate');
+CALL insert_fournisseur_ingredient('Le grand marché', 'Oignons');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Pita');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Galette');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Buns');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Salade');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Tomate');
+CALL insert_fournisseur_ingredient('Le fermier d''ici', 'Oignons');
+CALL insert_fournisseur_ingredient('Le fermier de demain', 'Boeuf');
+CALL insert_fournisseur_ingredient('Le fermier de demain', 'Poulet');
+CALL insert_fournisseur_ingredient('Le fermier de demain', 'Ketchup');
+CALL insert_fournisseur_ingredient('Le fermier de demain', 'Mayonnaise');
+
+
+-------------------------
+-- création des achats
+-------------------------
+
+-- Procédure pour insérer un achat en fonction de l'ingredient fournisseur
+CREATE OR REPLACE PROCEDURE insert_achat(
+    p_achat_date IN DATE,
+    p_achat_quantite IN NUMBER,
+    p_achat_prix IN NUMBER
+)
+    IS
+    v_fournisseur_ingredient_uid  VARCHAR2(255);
+
+BEGIN
+    -- Récupérer l'UID du fournisseur_ingredient en fonction de l'ingrédient
+    IF p_fournisseur_ingredient IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Produit non trouvé pour le nom spécifié.');
+    ELSE
+        SELECT fournisseur_ingredient_uid INTO v_fournisseur_ingredient_uid
+        FROM fournisseur_ingredient
+        WHERE ingredient_uid = p_ingredient_uid;
+    END IF;
+
+    -- Insertion du nouvel achat dans la table
+    INSERT INTO achat (achat_uid,
+                       achat_id,
+                       achat_date,
+                       achat_quantite,
+                       achat_prix,
+                       fournisseur_ingredient_uid
+    )
+    VALUES (SYS_GUID(),
+            seq_id_achat.nextval,
+            p_achat_date,
+            p_achat_quantite,
+            p_achat_prix,
+            v_fournisseur_ingredient_uid
+           );
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
+END insert_achat;
+
+-- Test d'appel de la procédure
+BEGIN
+    insert_achat(
+            p_achat_date => SYSDATE - 6,
+            p_achat_quantite => 200,
+            p_achat_prix => 40
+    );
+END;
+
+CALL insert_achat(
+                SYSDATE - 3,
+                50,
+                (SELECT fournisseur_ingredient_uid
+                 FROM fournisseur_ingredient
+                 WHERE fournisseur_nom = 'Le grand marché' AND ingredient_nom = 'Pita')
+     );
+END;
+
+
 
 --
 -- STATISTIQUES À EXTRAIRE ;
+-- essai de PR
 
 -- Quel stock j’ai dans tel produit
 
