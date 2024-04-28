@@ -28,6 +28,16 @@ BEGIN
         END LOOP;
 END;
 
+-- Supprimer les vues si elles existent
+BEGIN
+    FOR cur_rec IN (SELECT view_name FROM user_views)
+        LOOP
+            IF cur_rec.view_name IS NOT NULL THEN
+                EXECUTE IMMEDIATE 'DROP VIEW ' || cur_rec.view_name;
+            END IF;
+        END LOOP;
+END;
+
 
 ------------------------
 -- Creation table client

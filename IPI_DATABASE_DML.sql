@@ -626,8 +626,6 @@ CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 ---------------------------------------------------------------------------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
 ---------------------------------------------------------------------------
-
--- Création de la vue
 CREATE OR REPLACE VIEW commande_client_ingredient AS
 SELECT
     c.client_nom,
@@ -660,7 +658,12 @@ SELECT
     i.ingredient_unite,
     COALESCE(achete.quantite_achetee, 0) AS quantite_achetee,
     COALESCE(utilise.quantite_utilisee, 0) AS quantite_utilisee,
-    COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0) AS stock_restant
+    COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0) AS stock_restant,
+    ROUND(
+            CASE
+                WHEN COALESCE(achete.quantite_achetee, 0) <> 0 THEN
+                    (COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0)) / COALESCE(achete.quantite_achetee, 0) * 100
+            END, 2) AS pourcentage_stock_restant
 FROM
     ingredient i
         LEFT JOIN (
@@ -687,9 +690,72 @@ FROM
 ORDER BY i.ingredient_id;
 
 
----------------------------------------------------------------------------
--- Vues du nombre de produit commandées
----------------------------------------------------------------------------
+----------------------------------------------------------------
+-- Vue des ingredient utilisés en fonction des commandes passées
+----------------------------------------------------------------
+
+-- Vue du total des produits utilisés
+CREATE OR REPLACE VIEW vue_ingredients_consommes_total AS
+SELECT *
+FROM (
+    SELECT ingredient_nom, SUM(pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue) as quantite_utilisee
+    FROM ingredient i
+             LEFT JOIN produit_ingredient pi ON pi.ingredient_uid = i.ingredient_uid
+             LEFT JOIN produit p ON p.produit_uid = pi.produit_uid
+             LEFT JOIN commande_produit cp ON cp.produit_uid = p.produit_uid
+             LEFT JOIN commande c on c.commande_uid = cp.commande_uid
+    GROUP BY ingredient_nom
+) PIVOT (
+    SUM(quantite_utilisee)
+    FOR ingredient_nom IN (
+        'Pita',
+        'Galette',
+        'Buns',
+        'Salade',
+        'Tomate',
+        'Oignons',
+        'Pommes de terre',
+        'Boeuf',
+        'Poulet',
+        'Ketchup',
+        'Mayonnaise',
+        'Huile',
+        'Sel',
+        'Coca',
+        'Orangina'
+        )
+    );
+
+
+-- Vue du détail des produits par commandes
+CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commande AS
+SELECT c.commande_id,
+       SUM(CASE WHEN i.ingredient_nom = 'Pita' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Pita,
+       SUM(CASE WHEN i.ingredient_nom = 'Galette' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Galette,
+       SUM(CASE WHEN i.ingredient_nom = 'Buns' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Buns,
+       SUM(CASE WHEN i.ingredient_nom = 'Salade' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Salade,
+       SUM(CASE WHEN i.ingredient_nom = 'Tomate' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Tomate,
+       SUM(CASE WHEN i.ingredient_nom = 'Oignons' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Oignons,
+       SUM(CASE WHEN i.ingredient_nom = 'Pommes de terre' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS "Pommes de terre",
+       SUM(CASE WHEN i.ingredient_nom = 'Boeuf' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Boeuf,
+       SUM(CASE WHEN i.ingredient_nom = 'Poulet' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Poulet,
+       SUM(CASE WHEN i.ingredient_nom = 'Ketchup' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Ketchup,
+       SUM(CASE WHEN i.ingredient_nom = 'Mayonnaise' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Mayonnaise,
+       SUM(CASE WHEN i.ingredient_nom = 'Huile' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Huile,
+       SUM(CASE WHEN i.ingredient_nom = 'Sel' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Sel,
+       SUM(CASE WHEN i.ingredient_nom = 'Coca' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Coca,
+       SUM(CASE WHEN i.ingredient_nom = 'Orangina' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Orangina
+FROM ingredient i
+         LEFT JOIN produit_ingredient pi ON pi.ingredient_uid = i.ingredient_uid
+         LEFT JOIN produit p ON p.produit_uid = pi.produit_uid
+         LEFT JOIN commande_produit cp ON cp.produit_uid = p.produit_uid
+         LEFT JOIN commande c on c.commande_uid = cp.commande_uid
+GROUP BY c.commande_id;
+
+
+--------------------------------------
+-- Vues du nombre de produit commandés
+--------------------------------------
 CREATE OR REPLACE VIEW vue_produit_commandes AS
 SELECT *
 FROM (
@@ -705,16 +771,3 @@ FROM (
         'Burger mayonnaise', 'Burger ketchup', 'Tacos', 'Galette poulet', 'Kebab mayonnaise', 'Kebab ketchup', 'Frites', 'Cannette Coca', 'Cannette Orangina'
         )
     );
-
---
--- STATISTIQUES À EXTRAIRE ;
--- essai de PR
-
--- Quel stock j’ai dans tel produit
-
--- Quand ai-je acheté de la viande pour la dernière fois
-
--- Le nom du client qui a mangé le plus de poulet entre le 19 mars et le 8 mai
-
-
--- Insérer une nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'nouvelle commande avec le client_uid correspondant à celui du client avec client_name = 'Nom1'
