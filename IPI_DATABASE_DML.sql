@@ -625,7 +625,31 @@ CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 -- création des Vues
 ----------------------
 
+-----------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
+-----------
+
+-- Création de la vue
+CREATE OR REPLACE VIEW commande_client_ingredient AS
+SELECT
+    c.client_nom,
+    c.client_prenom,
+    co.commande_id,
+    co.commande_date,
+    LISTAGG(p.produit_nom, ', ') WITHIN GROUP (ORDER BY p.produit_nom) AS produits,
+    SUM(p.produit_prix) AS total_prix
+FROM commande co
+         JOIN client c ON co.client_uid = c.client_uid
+         JOIN commande_produit cp ON co.commande_uid = cp.commande_uid
+         JOIN produit p ON cp.produit_uid = p.produit_uid
+GROUP BY
+    c.client_nom,
+    c.client_prenom,
+    co.commande_id,
+    co.commande_date;
+
+-- Affichage de la vue
+SELECT * FROM commande_client_ingredient;
 
 
 
