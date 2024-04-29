@@ -829,7 +829,7 @@ FROM (SELECT ingredient_nom,
 
 
 -- Vue du détail des produits par commandes
-CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commandes AS
+CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commande AS
 SELECT c.commande_id,
        SUM(CASE
                WHEN i.ingredient_nom = 'Pita' THEN pi.produit_ingredient_quantite_utilise *
@@ -902,7 +902,7 @@ GROUP BY c.commande_id;
 --------------------------------------
 -- Vues du nombre de produit commandés
 --------------------------------------
-CREATE OR REPLACE VIEW vue_produits_par_commandes AS
+CREATE OR REPLACE VIEW vue_produits_par_commande AS
 SELECT commande_id,
        SUM(NVL(burger_mayonnaise, 0)) AS burger_mayonnaise,
        SUM(NVL(burger_ketchup, 0))    AS burger_ketchup,
@@ -941,7 +941,7 @@ GROUP BY commande_id;
 --------------------------------------
 -- Vue de la somme des ventes / achats
 --------------------------------------
-CREATE OR REPLACE VIEW vue_somme_ventes_achats AS
+CREATE OR REPLACE VIEW vue_ventes_achats AS
 SELECT v.commande_id,
        v.vente,
        a.achats,
@@ -969,4 +969,4 @@ ORDER BY v.commande_id;
 
 
 -- TODO:
--- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
+-- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 20%)
