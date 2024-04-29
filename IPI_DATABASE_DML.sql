@@ -44,8 +44,7 @@ BEGIN
     COMMIT;
 END insert_client;
 
-
--- Appel de la procédure
+-- Appel de la procédure d'ajout des clients
 BEGIN
     insert_client('jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
                   '20 rue des Monts d''Or', '69009', 'Lyon');
@@ -68,6 +67,54 @@ BEGIN
     insert_client('schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
                   '6 Avenue du Général Leclerc', '67000', 'Strasbourg');
 END;
+
+-- Procédure de mise à jour d'un client
+CREATE OR REPLACE PROCEDURE update_client(
+    p_client_id           IN client.client_id%TYPE,
+    p_client_email        IN client.client_email%TYPE,
+    p_client_nom          IN client.client_nom%TYPE,
+    p_client_prenom       IN client.client_prenom%TYPE,
+    p_client_telephone    IN client.client_telephone%TYPE,
+    p_client_adresse      IN client.client_adresse%TYPE,
+    p_client_cp           IN client.client_cp%TYPE,
+    p_client_ville        IN client.client_ville%TYPE
+)
+    IS v_rows_affected NUMBER;
+BEGIN
+    UPDATE client
+    SET client_email = p_client_email,
+        client_nom = p_client_nom,
+        client_prenom = p_client_prenom,
+        client_telephone = p_client_telephone,
+        client_adresse = p_client_adresse,
+        client_cp = p_client_cp,
+        client_ville = p_client_ville
+    WHERE client_id = p_client_id;
+    COMMIT;
+
+    -- Vérifier le nombre de lignes affectées
+    SELECT COUNT(*)
+    INTO v_rows_affected
+    FROM client
+    WHERE client_id = p_client_id;
+
+    IF v_rows_affected = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Aucun client trouvé avec l''ID ' || p_client_id);
+    ELSE
+        DBMS('Client ' || p_client_id || ' mis à jour avec succès.');
+    END IF;
+
+    COMMIT;
+END update_client;
+
+-- Appel de la mise à jour d'un client
+CALL update_client(9,'lopez.jose@gmail.com', 'Lopez', 'Jose', '0612345678',
+                   '4 Rue des Jardins', '94000', 'Créteil');
+
+
+--------------
+-- Ingrédients
+--------------
 
 -- Création de types d'ingrédients
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
@@ -122,7 +169,7 @@ BEGIN
             seq_id_ingredient.nextval,
             p_ingredient_nom,
             p_ingredient_unite);
-END;
+END insert_ingredient_par_type;
 
 -- Ajout des ingrédients
 CALL insert_ingredient_par_type('Pita', 'Pain', 'Pc');
@@ -212,7 +259,7 @@ BEGIN
             v_produit_uid,
             v_ingredient_uid);
     COMMIT;
-END;
+END ajoute_ingredient_produit;
 
 
 CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 1);
@@ -325,8 +372,8 @@ BEGIN
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
-END;
+        DBMS('Erreur: ' || SQLERRM);
+END insert_commande;
 
 -- Commandes
 CALL insert_commande(1,'jeanmartin@gmail.com',
@@ -542,8 +589,8 @@ EXCEPTION
         RAISE_APPLICATION_ERROR(-20001, 'Nom de fournisseur ou d''ingrédient invalide.');
     WHEN OTHERS THEN
         ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Erreur: ' || SQLERRM);
-END;
+        DBMS('Erreur: ' || SQLERRM);
+END insert_fournisseur_ingredient;
 
 -- Insertion de valeurs dans la table fournisseur_ingredients
 CALL insert_fournisseur_ingredient('Le grand marché', 'Pita');
@@ -600,7 +647,7 @@ BEGIN
              WHERE fournisseur_uid = v_fournisseur_uid AND ingredient_uid = v_ingredient_uid));
 
     COMMIT;
-END;
+END insert_achat;
 
 CALL insert_achat('Le grand marché', 'Pita', 20, 0.6);
 CALL insert_achat('Le grand marché', 'Galette', 20, 0.4);
@@ -791,7 +838,7 @@ GROUP BY commande_id;
 
 
 -- TODO:
--- [ ] Procédure de mise à jour des données clients en fournissant leur id
+-- [X] Procédure de mise à jour des données clients en fournissant leur id
 -- [ ] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
 -- [ ] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
