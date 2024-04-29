@@ -1,4 +1,4 @@
--- creation d'une procedure pour afficher d'autres procedures :
+-- Procédure de raccourci d'affichage terminal
 CREATE OR REPLACE PROCEDURE DBMS(i_message IN VARCHAR2 DEFAULT 'lorem ipsum') AS
 BEGIN
     DBMS_OUTPUT.ENABLE;
@@ -132,7 +132,7 @@ BEGIN
     IF v_rows_affected = 0 THEN
         RAISE_APPLICATION_ERROR(-20001, 'Aucun client trouvé avec l''ID ' || p_client_id);
     ELSE
-        -- Suppression des commandes liées au client
+        -- Mise à NULL de la référence des commandes passées
         UPDATE commande
         SET client_uid = NULL
         WHERE client_uid = (SELECT client_uid FROM client WHERE client_id = p_client_id);
@@ -143,7 +143,7 @@ BEGIN
         WHERE client_id = p_client_id;
 
         COMMIT;
-        DBMS_OUTPUT.PUT_LINE('Client ' || p_client_id || ' supprimé avec succès.');
+        DBMS('Client ' || p_client_id || ' supprimé avec succès.');
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
@@ -156,7 +156,7 @@ END supprimer_client;
 -- Ingrédients
 --------------
 
--- Création de types d'ingrédients
+-- Insertion des types d'ingrédients
 INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingredient_nom,
                             type_ingredient_duree_peremption)
 VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Pain', 5);
@@ -181,7 +181,9 @@ INSERT INTO type_ingredient(type_ingredient_uid, type_ingredient_id, type_ingred
                             type_ingredient_duree_peremption)
 VALUES (SYS_GUID(), seq_id_type_ingredient.nextval, 'Boisson', 300);
 
+
 -- Procédure d'ajout d'ingrédient en fonction de leurs types
+------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE insert_ingredient_par_type(
     p_ingredient_nom IN VARCHAR2,
     p_type_ingredient_nom IN VARCHAR2,
@@ -258,10 +260,8 @@ INSERT INTO produit(produit_uid, produit_id, produit_nom, produit_prix)
 VALUES (SYS_GUID(), seq_id_produit.nextval, 'Cannette Orangina', 2.50);
 
 
--- Création de la jointure produit_ingredient (recettes des produits)
-
-
 -- Procédure ajoute un ingrédient à un produit selon une certaine quantité utilisée
+-----------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE ajoute_ingredient_produit(
     p_ingredient_nom IN VARCHAR2,
     p_produit_nom IN VARCHAR2,
@@ -301,7 +301,8 @@ BEGIN
     COMMIT;
 END ajoute_ingredient_produit;
 
-
+-- Ajout des recettes d'ingrédients pour les produits
+-----------------------------------------------------
 CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 1);
 CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', 0.025);
 CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', 0.025);
@@ -359,10 +360,12 @@ CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 1);
 
 
 -------------------------
--- création des commandes
+-- Création des commandes
 -------------------------
 
---Procédure d'insert d'une commande-produit en fonction de l'id de la commande, de l'email d'un client, du produit et de sa quantité :
+--Procédure d'insert d'une commande-produit en fonction de l'id de la commande,
+-- de l'email d'un client, du produit et de sa quantité :
+---------------------------------------------------------
 CREATE OR REPLACE PROCEDURE insert_commande(
     p_commande_id IN NUMBER,
     p_client_email IN VARCHAR2,
@@ -428,7 +431,8 @@ BEGIN
     COMMIT;
 END insert_commande;
 
--- Commandes
+-- Insertion des commandes
+--------------------------
 CALL insert_commande(1, 'jeanmartin@gmail.com',
                      TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger mayonnaise', 1);
@@ -539,10 +543,11 @@ CALL insert_commande(15, 'popov.ivan@laposte.fr',
 
 
 ----------------------------
--- création des fournisseurs
+-- Création des fournisseurs
 ----------------------------
 
 -- Procédure pour insérer un fournisseur
+----------------------------------------
 CREATE OR REPLACE PROCEDURE insert_fournisseur(
     p_fournisseur_nom IN VARCHAR2,
     p_fournisseur_email IN VARCHAR2,
@@ -574,7 +579,7 @@ BEGIN
     COMMIT;
 END insert_fournisseur;
 
--- Test d'appel de la procédure
+-- Test d'appel de la procédure, insertion des fournisseurs
 BEGIN
     insert_fournisseur(
             p_fournisseur_nom => 'Le grand marché',
@@ -712,6 +717,7 @@ BEGIN
     COMMIT;
 END insert_achat;
 
+-- Insertion des achats
 CALL insert_achat('Le grand marché', 'Pita', 20, 0.6);
 CALL insert_achat('Le grand marché', 'Galette', 30, 0.4);
 CALL insert_achat('Miam Miam & Compagnie', 'Buns', 30, 1.2);
@@ -729,14 +735,14 @@ CALL insert_achat('Aqua Soda', 'Coca', 12, 0.40);
 CALL insert_achat('Aqua Soda', 'Orangina', 12, 0.45);
 
 
-----------------------
+--------------------
 -- création des Vues
-----------------------
+--------------------
 
 ---------------------------------------------------------------------------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
 ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW vue_commande_client_ingredient AS
+CREATE OR REPLACE VIEW vue_commande_client_produit AS
 SELECT c.client_nom,
        c.client_prenom,
        co.commande_id,
@@ -823,7 +829,7 @@ FROM (SELECT ingredient_nom,
 
 
 -- Vue du détail des produits par commandes
-CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commande AS
+CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commandes AS
 SELECT c.commande_id,
        SUM(CASE
                WHEN i.ingredient_nom = 'Pita' THEN pi.produit_ingredient_quantite_utilise *
@@ -896,7 +902,7 @@ GROUP BY c.commande_id;
 --------------------------------------
 -- Vues du nombre de produit commandés
 --------------------------------------
-CREATE OR REPLACE VIEW vue_produit_commandes AS
+CREATE OR REPLACE VIEW vue_produits_par_commandes AS
 SELECT commande_id,
        SUM(NVL(burger_mayonnaise, 0)) AS burger_mayonnaise,
        SUM(NVL(burger_ketchup, 0))    AS burger_ketchup,
@@ -949,7 +955,7 @@ FROM (SELECT commande.commande_id,
       GROUP BY commande.commande_uid, commande.commande_id) v
          JOIN (SELECT commande.commande_uid,
                       ROUND(SUM(achat.achat_prix_unite * commande_produit.commande_produit_quantite_vendue *
-                          produit_ingredient.produit_ingredient_quantite_utilise),2) AS achats
+                                produit_ingredient.produit_ingredient_quantite_utilise), 2) AS achats
                FROM commande
                         JOIN commande_produit ON commande.commande_uid = commande_produit.commande_uid
                         JOIN produit ON commande_produit.produit_uid = produit.produit_uid
@@ -963,7 +969,4 @@ ORDER BY v.commande_id;
 
 
 -- TODO:
--- [X] Procédure de mise à jour des données clients en fournissant leur id
--- [X] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
--- [X] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
