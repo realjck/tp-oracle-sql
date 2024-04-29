@@ -72,25 +72,26 @@ END;
 -- Procédure de mise à jour d'un client
 ---------------------------------------
 CREATE OR REPLACE PROCEDURE update_client(
-    p_client_id           IN client.client_id%TYPE,
-    p_client_email        IN client.client_email%TYPE,
-    p_client_nom          IN client.client_nom%TYPE,
-    p_client_prenom       IN client.client_prenom%TYPE,
-    p_client_telephone    IN client.client_telephone%TYPE,
-    p_client_adresse      IN client.client_adresse%TYPE,
-    p_client_cp           IN client.client_cp%TYPE,
-    p_client_ville        IN client.client_ville%TYPE
+    p_client_id IN client.client_id%TYPE,
+    p_client_email IN client.client_email%TYPE,
+    p_client_nom IN client.client_nom%TYPE,
+    p_client_prenom IN client.client_prenom%TYPE,
+    p_client_telephone IN client.client_telephone%TYPE,
+    p_client_adresse IN client.client_adresse%TYPE,
+    p_client_cp IN client.client_cp%TYPE,
+    p_client_ville IN client.client_ville%TYPE
 )
-    IS v_rows_affected NUMBER;
+    IS
+    v_rows_affected NUMBER;
 BEGIN
     UPDATE client
-    SET client_email = p_client_email,
-        client_nom = p_client_nom,
-        client_prenom = p_client_prenom,
+    SET client_email     = p_client_email,
+        client_nom       = p_client_nom,
+        client_prenom    = p_client_prenom,
         client_telephone = p_client_telephone,
-        client_adresse = p_client_adresse,
-        client_cp = p_client_cp,
-        client_ville = p_client_ville
+        client_adresse   = p_client_adresse,
+        client_cp        = p_client_cp,
+        client_ville     = p_client_ville
     WHERE client_id = p_client_id;
     COMMIT;
 
@@ -110,13 +111,13 @@ BEGIN
 END update_client;
 
 -- Appel de la mise à jour d'un client
-CALL update_client(9,'lopez.jose@gmail.com', 'Lopez', 'Jose', '0612345678',
+CALL update_client(9, 'lopez.jose@gmail.com', 'Lopez', 'Jose', '0612345678',
                    '4 Rue des Jardins', '94000', 'Créteil');
 
 
 -- Procédure de suppression d'un client
 ---------------------------------------
-CREATE OR REPLACE PROCEDURE supprimer_client (
+CREATE OR REPLACE PROCEDURE supprimer_client(
     p_client_id IN client.client_id%TYPE
 )
     IS
@@ -137,7 +138,8 @@ BEGIN
         WHERE client_uid = (SELECT client_uid FROM client WHERE client_id = p_client_id);
 
         -- Suppression du client
-        DELETE FROM client
+        DELETE
+        FROM client
         WHERE client_id = p_client_id;
 
         COMMIT;
@@ -319,8 +321,8 @@ CALL ajoute_ingredient_produit('Pommes de terre', 'Tacos', 0.1);
 CALL ajoute_ingredient_produit('Salade', 'Tacos', 0.025);
 CALL ajoute_ingredient_produit('Tomate', 'Tacos', 0.025);
 CALL ajoute_ingredient_produit('Oignons', 'Tacos', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 0.25);
-CALL ajoute_ingredient_produit('Poulet', 'Tacos', 0.25);
+CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 0.2);
+CALL ajoute_ingredient_produit('Poulet', 'Tacos', 0.2);
 CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', 0.025);
 CALL ajoute_ingredient_produit('Ketchup', 'Tacos', 0.025);
 
@@ -335,16 +337,16 @@ CALL ajoute_ingredient_produit('Pita', 'Kebab mayonnaise', 1);
 CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', 0.025);
 CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', 0.025);
 CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 0.15);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 0.15);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 0.1);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 0.1);
 CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', 0.025);
 
 CALL ajoute_ingredient_produit('Pita', 'Kebab ketchup', 1);
 CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', 0.025);
 CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', 0.025);
 CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 0.15);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 0.15);
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 0.1);
+CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 0.1);
 CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 0.025);
 
 CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', 0.15);
@@ -361,18 +363,18 @@ CALL ajoute_ingredient_produit('Orangina', 'Cannette Orangina', 1);
 -------------------------
 
 --Procédure d'insert d'une commande-produit en fonction de l'id de la commande, de l'email d'un client, du produit et de sa quantité :
-CREATE OR REPLACE PROCEDURE insert_commande (
-    p_commande_id               IN NUMBER,
-    p_client_email              IN VARCHAR2,
-    p_commande_date             IN DATE,
-    p_produit_nom               IN VARCHAR2,
-    p_quantite_produit_vendue   IN NUMBER
+CREATE OR REPLACE PROCEDURE insert_commande(
+    p_commande_id IN NUMBER,
+    p_client_email IN VARCHAR2,
+    p_commande_date IN DATE,
+    p_produit_nom IN VARCHAR2,
+    p_quantite_produit_vendue IN NUMBER
 )
     IS
-    v_client_uid                VARCHAR2(255);
-    v_produit_uid               VARCHAR2(255);
-    v_commande_uid              VARCHAR2(255);
-    v_rows_found                NUMBER;
+    v_client_uid   VARCHAR2(255);
+    v_produit_uid  VARCHAR2(255);
+    v_commande_uid VARCHAR2(255);
+    v_rows_found   NUMBER;
 BEGIN
 
     -- Récupérer l'UID du client en fonction de son email
@@ -384,7 +386,8 @@ BEGIN
         IF v_rows_found = 0 THEN
             RAISE_APPLICATION_ERROR(-20000, 'Aucun client trouvé avec l''email ' || p_client_email);
         ELSE
-            SELECT client_uid INTO v_client_uid
+            SELECT client_uid
+            INTO v_client_uid
             FROM client
             WHERE client_email = p_client_email;
         END IF;
@@ -400,7 +403,8 @@ BEGIN
         INSERT (commande_uid, commande_id, client_uid, commande_date)
         VALUES (SYS_GUID(), p_commande_id, v_client_uid, p_commande_date);
 
-    SELECT commande_uid INTO v_commande_uid
+    SELECT commande_uid
+    INTO v_commande_uid
     FROM commande
     WHERE commande_id = p_commande_id;
 
@@ -412,7 +416,8 @@ BEGIN
     IF v_rows_found = 0 THEN
         RAISE_APPLICATION_ERROR(-20000, 'Produit non valide: ' || p_produit_nom);
     ELSE
-        SELECT produit_uid INTO v_produit_uid
+        SELECT produit_uid
+        INTO v_produit_uid
         FROM produit
         WHERE produit_nom = p_produit_nom;
     END IF;
@@ -424,108 +429,111 @@ BEGIN
 END insert_commande;
 
 -- Commandes
-CALL insert_commande(1,'jeanmartin@gmail.com',
+CALL insert_commande(1, 'jeanmartin@gmail.com',
                      TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger mayonnaise', 1);
-CALL insert_commande(1,'jeanmartin@gmail.com',
+CALL insert_commande(1, 'jeanmartin@gmail.com',
                      TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 1);
-CALL insert_commande(1,'jeanmartin@gmail.com',
+CALL insert_commande(1, 'jeanmartin@gmail.com',
                      TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Coca', 1);
 
-CALL insert_commande(2,NULL,
+CALL insert_commande(2, NULL,
                      TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger ketchup', 2);
-CALL insert_commande(2,NULL,
+CALL insert_commande(2, NULL,
                      TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 2);
-CALL insert_commande(2,NULL,
+CALL insert_commande(2, NULL,
                      TO_DATE('2024-04-27 12:10:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Orangina', 2);
 
-CALL insert_commande(3,'benali.khaled@orange.fr',
+CALL insert_commande(3, 'benali.khaled@orange.fr',
                      TO_DATE('2024-04-27 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Tacos', 4);
-CALL insert_commande(3,'benali.khaled@orange.fr',
+CALL insert_commande(3, 'benali.khaled@orange.fr',
                      TO_DATE('2024-04-27 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 2);
 
-CALL insert_commande(4,NULL,
+CALL insert_commande(4, NULL,
                      TO_DATE('2024-04-27 12:20:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Galette poulet', 3);
 
-CALL insert_commande(5,'zhang.mei@free.fr',
+CALL insert_commande(5, 'zhang.mei@free.fr',
                      TO_DATE('2024-04-27 12:25:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab mayonnaise', 2);
-CALL insert_commande(5,'zhang.mei@free.fr',
+CALL insert_commande(5, 'zhang.mei@free.fr',
                      TO_DATE('2024-04-27 12:25:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Orangina', 2);
 
-CALL insert_commande(6,NULL,
+CALL insert_commande(6, NULL,
+                     TO_DATE('2024-04-27 12:30:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Tacos', 1);
+CALL insert_commande(6, NULL,
                      TO_DATE('2024-04-27 12:30:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 3);
 
-CALL insert_commande(7,'nguyen.thi@numericable.fr',
+CALL insert_commande(7, 'nguyen.thi@numericable.fr',
                      TO_DATE('2024-04-27 12:35:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Galette poulet', 5);
-CALL insert_commande(7,'nguyen.thi@numericable.fr',
+CALL insert_commande(7, 'nguyen.thi@numericable.fr',
                      TO_DATE('2024-04-27 12:35:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 3);
 
-CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+CALL insert_commande(8, 'kowalski.anna@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger mayonnaise', 1);
-CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+CALL insert_commande(8, 'kowalski.anna@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 1);
-CALL insert_commande(8,'kowalski.anna@bouyguestelecom.fr',
+CALL insert_commande(8, 'kowalski.anna@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:40:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Orangina', 1);
 
-CALL insert_commande(9,'garcia.pedro@sfr.fr',
+CALL insert_commande(9, 'garcia.pedro@sfr.fr',
                      TO_DATE('2024-04-27 12:45:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab mayonnaise', 1);
-CALL insert_commande(9,'garcia.pedro@sfr.fr',
+CALL insert_commande(9, 'garcia.pedro@sfr.fr',
                      TO_DATE('2024-04-27 12:45:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Orangina', 1);
 
-CALL insert_commande(10,NULL,
+CALL insert_commande(10, NULL,
                      TO_DATE('2024-04-27 12:50:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger ketchup', 2);
-CALL insert_commande(10,NULL,
+CALL insert_commande(10, NULL,
                      TO_DATE('2024-04-27 12:50:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Coca', 2);
 
-CALL insert_commande(11,'schmidt.hans@bouyguestelecom.fr',
+CALL insert_commande(11, 'schmidt.hans@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:55:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Galette poulet', 1);
-CALL insert_commande(11,'schmidt.hans@bouyguestelecom.fr',
+CALL insert_commande(11, 'schmidt.hans@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:55:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Coca', 1);
 
-CALL insert_commande(12,'lopez.jose@gmail.com',
+CALL insert_commande(12, 'lopez.jose@gmail.com',
                      TO_DATE('2024-04-27 13:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab ketchup', 1);
 
-CALL insert_commande(13,'smith.mary@orange.fr',
+CALL insert_commande(13, 'smith.mary@orange.fr',
                      TO_DATE('2024-04-27 13:05:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Tacos', 6);
-CALL insert_commande(13,'smith.mary@orange.fr',
+CALL insert_commande(13, 'smith.mary@orange.fr',
                      TO_DATE('2024-04-27 13:05:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 6);
 
-CALL insert_commande(14,NULL,
+CALL insert_commande(14, NULL,
                      TO_DATE('2024-04-27 13:10:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Galette poulet', 3);
 
-CALL insert_commande(15,'popov.ivan@laposte.fr',
+CALL insert_commande(15, 'popov.ivan@laposte.fr',
                      TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab mayonnaise', 1);
-CALL insert_commande(15,'popov.ivan@laposte.fr',
+CALL insert_commande(15, 'popov.ivan@laposte.fr',
                      TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab ketchup', 1);
-CALL insert_commande(15,'popov.ivan@laposte.fr',
+CALL insert_commande(15, 'popov.ivan@laposte.fr',
                      TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 2);
 
@@ -578,52 +586,55 @@ BEGIN
     );
 END;
 
-BEGIN insert_fournisseur(
-        'Le champs des possible'
-    , 'lechampdespossible@hotmail.fr'
-    , '0643545625'
-    ,'2 chemin de l''alouette'
-    ,'42100','Saint Etienne');
+BEGIN
+    insert_fournisseur(
+            'Le champs des possible'
+        , 'lechampdespossible@hotmail.fr'
+        , '0643545625'
+        , '2 chemin de l''alouette'
+        , '42100', 'Saint Etienne');
 END;
 CALL insert_fournisseur('Le fermier local', 'fermierlocal@free.fr',
                         '0625485621', '4 rue du marché',
-                        '69100','Villeurbanne');
+                        '69100', 'Villeurbanne');
 
 CALL insert_fournisseur('Miam Miam & Compagnie', 'miametcie@lycos.fr',
                         '0625434321', '453 rue plantée',
-                        '69101','Lyon');
+                        '69101', 'Lyon');
 
 CALL insert_fournisseur('L''agriculteur de demain', 'agriculteurdedemain@yahoo.com',
                         '0645543793', '4098 rue de l''avenir',
-                        '69101','Lyon');
+                        '69101', 'Lyon');
 
 CALL insert_fournisseur('Le campagnard de l''amour', 'campagnarddelamour@sfr.fr',
                         '0625434321', '43 rue du coeur',
-                        '69101','Lyon');
+                        '69101', 'Lyon');
 
 CALL insert_fournisseur('Aqua Soda', 'cepadelo@aquasoda.com',
                         '0658473849', '853 rue des cyprès',
-                        '38200','Vienne');
+                        '38200', 'Vienne');
 
 
 ----------------------------------------------
 -- Création de la table fournisseur_ingredient
 ----------------------------------------------
 
-CREATE OR REPLACE PROCEDURE insert_fournisseur_ingredient (
+CREATE OR REPLACE PROCEDURE insert_fournisseur_ingredient(
     p_fournisseur_nom IN VARCHAR2,
     p_ingredient_nom IN VARCHAR2
 ) IS
     v_fournisseur_uid VARCHAR2(255);
-    v_ingredient_uid VARCHAR2(255);
+    v_ingredient_uid  VARCHAR2(255);
 BEGIN
     -- Récupérer l'UID du fournisseur en fonction de son nom
-    SELECT fournisseur_uid INTO v_fournisseur_uid
+    SELECT fournisseur_uid
+    INTO v_fournisseur_uid
     FROM fournisseur
     WHERE fournisseur_nom = p_fournisseur_nom;
 
     -- Récupérer l'UID de l'ingrédient en fonction de son nom
-    SELECT ingredient_uid INTO v_ingredient_uid
+    SELECT ingredient_uid
+    INTO v_ingredient_uid
     FROM ingredient
     WHERE ingredient_nom = p_ingredient_nom;
 
@@ -670,35 +681,39 @@ CALL insert_fournisseur_ingredient('Aqua Soda', 'Orangina');
 
 -- Procédure pour insérer un achat en fonction du fournisseur, de l'ingrédient, de la quantité et du prix d'achat
 CREATE OR REPLACE PROCEDURE insert_achat(
-    p_fournisseur_nom             IN VARCHAR2,
-    p_ingredient_nom                 IN VARCHAR2,
-    p_quantite                    IN NUMBER,
-    p_prix                        IN NUMBER
+    p_fournisseur_nom IN VARCHAR2,
+    p_ingredient_nom IN VARCHAR2,
+    p_quantite IN NUMBER,
+    p_prix IN NUMBER
 ) AS
     v_fournisseur_uid VARCHAR2(255);
-    v_ingredient_uid VARCHAR2(255);
+    v_ingredient_uid  VARCHAR2(255);
 BEGIN
     -- Récupérer l'identifiant du fournisseur en fonction de son nom
-    SELECT fournisseur_uid INTO v_fournisseur_uid
+    SELECT fournisseur_uid
+    INTO v_fournisseur_uid
     FROM fournisseur
     WHERE fournisseur_nom = p_fournisseur_nom;
 
     -- Récupérer l'identifiant du produit en fonction de son nom
-    SELECT ingredient_uid INTO v_ingredient_uid
+    SELECT ingredient_uid
+    INTO v_ingredient_uid
     FROM ingredient
     WHERE ingredient_nom = p_ingredient_nom;
 
     -- Insérer l'achat dans la table achat
     INSERT INTO achat (achat_uid, achat_id, achat_date, achat_quantite, achat_prix_unite, fournisseur_ingredient_uid)
     VALUES (SYS_GUID(), seq_id_achat.NEXTVAL, SYSDATE, p_quantite, p_prix,
-            (SELECT fournisseur_ingredient_uid FROM fournisseur_ingredient
-             WHERE fournisseur_uid = v_fournisseur_uid AND ingredient_uid = v_ingredient_uid));
+            (SELECT fournisseur_ingredient_uid
+             FROM fournisseur_ingredient
+             WHERE fournisseur_uid = v_fournisseur_uid
+               AND ingredient_uid = v_ingredient_uid));
 
     COMMIT;
 END insert_achat;
 
 CALL insert_achat('Le grand marché', 'Pita', 20, 0.6);
-CALL insert_achat('Le grand marché', 'Galette', 20, 0.4);
+CALL insert_achat('Le grand marché', 'Galette', 30, 0.4);
 CALL insert_achat('Miam Miam & Compagnie', 'Buns', 30, 1.2);
 CALL insert_achat('Le grand marché', 'Salade', 5, 2.50);
 CALL insert_achat('Le grand marché', 'Tomate', 5, 3.20);
@@ -710,8 +725,8 @@ CALL insert_achat('Miam Miam & Compagnie', 'Ketchup', 3, 3.50);
 CALL insert_achat('Miam Miam & Compagnie', 'Mayonnaise', 3, 3.20);
 CALL insert_achat('Miam Miam & Compagnie', 'Huile', 8, 2.80);
 CALL insert_achat('Miam Miam & Compagnie', 'Sel', 2, 0.80);
-CALL insert_achat('Aqua Soda', 'Coca', 50, 0.40);
-CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
+CALL insert_achat('Aqua Soda', 'Coca', 12, 0.40);
+CALL insert_achat('Aqua Soda', 'Orangina', 12, 0.45);
 
 
 ----------------------
@@ -721,23 +736,21 @@ CALL insert_achat('Aqua Soda', 'Orangina', 50, 0.45);
 ---------------------------------------------------------------------------
 -- Vues Commande par client avec ingrédients utilisé pour faire la commande
 ---------------------------------------------------------------------------
-CREATE OR REPLACE VIEW commande_client_ingredient AS
-SELECT
-    c.client_nom,
-    c.client_prenom,
-    co.commande_id,
-    co.commande_date,
-    LISTAGG(p.produit_nom, ', ') AS produits,
-    SUM(p.produit_prix * cp.COMMANDE_PRODUIT_QUANTITE_VENDUE) AS total_prix
+CREATE OR REPLACE VIEW vue_commande_client_ingredient AS
+SELECT c.client_nom,
+       c.client_prenom,
+       co.commande_id,
+       co.commande_date,
+       LISTAGG(p.produit_nom, ', ')                              AS produits,
+       SUM(p.produit_prix * cp.COMMANDE_PRODUIT_QUANTITE_VENDUE) AS total_prix
 FROM commande co
          LEFT JOIN client c ON co.client_uid = c.client_uid
          LEFT JOIN commande_produit cp ON co.commande_uid = cp.commande_uid
          LEFT JOIN produit p ON cp.produit_uid = p.produit_uid
-GROUP BY
-    c.client_nom,
-    c.client_prenom,
-    co.commande_id,
-    co.commande_date
+GROUP BY c.client_nom,
+         c.client_prenom,
+         co.commande_id,
+         co.commande_date
 ORDER BY co.commande_id;
 
 
@@ -745,41 +758,31 @@ ORDER BY co.commande_id;
 -- Vue de l'état du stock des ingrédients
 -----------------------------------------
 CREATE OR REPLACE VIEW vue_ingredients_stock AS
-SELECT
-    i.ingredient_id,
-    i.ingredient_nom,
-    i.ingredient_unite,
-    COALESCE(achete.quantite_achetee, 0) AS quantite_achetee,
-    COALESCE(utilise.quantite_utilisee, 0) AS quantite_utilisee,
-    COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0) AS stock_restant,
-    ROUND(
-            CASE
-                WHEN COALESCE(achete.quantite_achetee, 0) <> 0 THEN
-                    (COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0)) / COALESCE(achete.quantite_achetee, 0) * 100
-            END, 2) AS pourcentage_stock_restant
-FROM
-    ingredient i
-        LEFT JOIN (
-        SELECT
-            pi.ingredient_uid,
-            SUM(pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue) AS quantite_utilisee
-        FROM
-            produit_ingredient pi
-                JOIN commande_produit cp ON pi.produit_uid = cp.produit_uid
-                JOIN commande c ON cp.commande_uid = c.commande_uid
-        GROUP BY
-            pi.ingredient_uid
-    ) utilise ON i.ingredient_uid = utilise.ingredient_uid
-        LEFT JOIN (
-        SELECT
-            fi.ingredient_uid,
-            SUM(a.achat_quantite) AS quantite_achetee
-        FROM
-            fournisseur_ingredient fi
-                JOIN achat a ON fi.fournisseur_ingredient_uid = a.fournisseur_ingredient_uid
-        GROUP BY
-            fi.ingredient_uid
-    ) achete ON i.ingredient_uid = achete.ingredient_uid
+SELECT i.ingredient_id,
+       i.ingredient_nom,
+       i.ingredient_unite,
+       COALESCE(achete.quantite_achetee, 0)                                          AS quantite_achetee,
+       COALESCE(utilise.quantite_utilisee, 0)                                        AS quantite_utilisee,
+       COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0) AS stock_restant,
+       ROUND(
+               CASE
+                   WHEN COALESCE(achete.quantite_achetee, 0) <> 0 THEN
+                       (COALESCE(achete.quantite_achetee, 0) - COALESCE(utilise.quantite_utilisee, 0)) /
+                       COALESCE(achete.quantite_achetee, 0) * 100
+                   END, 2)                                                           AS pourcentage_stock_restant
+FROM ingredient i
+         LEFT JOIN (SELECT pi.ingredient_uid,
+                           SUM(pi.produit_ingredient_quantite_utilise *
+                               cp.commande_produit_quantite_vendue) AS quantite_utilisee
+                    FROM produit_ingredient pi
+                             JOIN commande_produit cp ON pi.produit_uid = cp.produit_uid
+                             JOIN commande c ON cp.commande_uid = c.commande_uid
+                    GROUP BY pi.ingredient_uid) utilise ON i.ingredient_uid = utilise.ingredient_uid
+         LEFT JOIN (SELECT fi.ingredient_uid,
+                           SUM(a.achat_quantite) AS quantite_achetee
+                    FROM fournisseur_ingredient fi
+                             JOIN achat a ON fi.fournisseur_ingredient_uid = a.fournisseur_ingredient_uid
+                    GROUP BY fi.ingredient_uid) achete ON i.ingredient_uid = achete.ingredient_uid
 ORDER BY i.ingredient_id;
 
 
@@ -790,15 +793,14 @@ ORDER BY i.ingredient_id;
 -- Vue du total des produits utilisés
 CREATE OR REPLACE VIEW vue_ingredients_consommes_total AS
 SELECT *
-FROM (
-    SELECT ingredient_nom, SUM(pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue) as quantite_utilisee
-    FROM ingredient i
-             LEFT JOIN produit_ingredient pi ON pi.ingredient_uid = i.ingredient_uid
-             LEFT JOIN produit p ON p.produit_uid = pi.produit_uid
-             LEFT JOIN commande_produit cp ON cp.produit_uid = p.produit_uid
-             LEFT JOIN commande c on c.commande_uid = cp.commande_uid
-    GROUP BY ingredient_nom
-) PIVOT (
+FROM (SELECT ingredient_nom,
+             SUM(pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue) as quantite_utilisee
+      FROM ingredient i
+               LEFT JOIN produit_ingredient pi ON pi.ingredient_uid = i.ingredient_uid
+               LEFT JOIN produit p ON p.produit_uid = pi.produit_uid
+               LEFT JOIN commande_produit cp ON cp.produit_uid = p.produit_uid
+               LEFT JOIN commande c on c.commande_uid = cp.commande_uid
+      GROUP BY ingredient_nom) PIVOT (
     SUM(quantite_utilisee)
     FOR ingredient_nom IN (
         'Pita',
@@ -823,21 +825,66 @@ FROM (
 -- Vue du détail des produits par commandes
 CREATE OR REPLACE VIEW vue_ingredients_consommes_par_commande AS
 SELECT c.commande_id,
-       SUM(CASE WHEN i.ingredient_nom = 'Pita' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Pita,
-       SUM(CASE WHEN i.ingredient_nom = 'Galette' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Galette,
-       SUM(CASE WHEN i.ingredient_nom = 'Buns' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Buns,
-       SUM(CASE WHEN i.ingredient_nom = 'Salade' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Salade,
-       SUM(CASE WHEN i.ingredient_nom = 'Tomate' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Tomate,
-       SUM(CASE WHEN i.ingredient_nom = 'Oignons' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Oignons,
-       SUM(CASE WHEN i.ingredient_nom = 'Pommes de terre' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS "Pommes de terre",
-       SUM(CASE WHEN i.ingredient_nom = 'Boeuf' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Boeuf,
-       SUM(CASE WHEN i.ingredient_nom = 'Poulet' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Poulet,
-       SUM(CASE WHEN i.ingredient_nom = 'Ketchup' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Ketchup,
-       SUM(CASE WHEN i.ingredient_nom = 'Mayonnaise' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Mayonnaise,
-       SUM(CASE WHEN i.ingredient_nom = 'Huile' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Huile,
-       SUM(CASE WHEN i.ingredient_nom = 'Sel' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Sel,
-       SUM(CASE WHEN i.ingredient_nom = 'Coca' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Coca,
-       SUM(CASE WHEN i.ingredient_nom = 'Orangina' THEN pi.produit_ingredient_quantite_utilise * cp.commande_produit_quantite_vendue ELSE 0 END) AS Orangina
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Pita' THEN pi.produit_ingredient_quantite_utilise *
+                                                   cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Pita,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Galette' THEN pi.produit_ingredient_quantite_utilise *
+                                                      cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Galette,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Buns' THEN pi.produit_ingredient_quantite_utilise *
+                                                   cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Buns,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Salade' THEN pi.produit_ingredient_quantite_utilise *
+                                                     cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Salade,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Tomate' THEN pi.produit_ingredient_quantite_utilise *
+                                                     cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Tomate,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Oignons' THEN pi.produit_ingredient_quantite_utilise *
+                                                      cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Oignons,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Pommes de terre' THEN pi.produit_ingredient_quantite_utilise *
+                                                              cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS "Pommes de terre",
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Boeuf' THEN pi.produit_ingredient_quantite_utilise *
+                                                    cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Boeuf,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Poulet' THEN pi.produit_ingredient_quantite_utilise *
+                                                     cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Poulet,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Ketchup' THEN pi.produit_ingredient_quantite_utilise *
+                                                      cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Ketchup,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Mayonnaise' THEN pi.produit_ingredient_quantite_utilise *
+                                                         cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Mayonnaise,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Huile' THEN pi.produit_ingredient_quantite_utilise *
+                                                    cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Huile,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Sel' THEN pi.produit_ingredient_quantite_utilise *
+                                                  cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Sel,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Coca' THEN pi.produit_ingredient_quantite_utilise *
+                                                   cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Coca,
+       SUM(CASE
+               WHEN i.ingredient_nom = 'Orangina' THEN pi.produit_ingredient_quantite_utilise *
+                                                       cp.commande_produit_quantite_vendue
+               ELSE 0 END) AS Orangina
 FROM ingredient i
          LEFT JOIN produit_ingredient pi ON pi.ingredient_uid = i.ingredient_uid
          LEFT JOIN produit p ON p.produit_uid = pi.produit_uid
@@ -851,23 +898,23 @@ GROUP BY c.commande_id;
 --------------------------------------
 CREATE OR REPLACE VIEW vue_produit_commandes AS
 SELECT commande_id,
-       SUM(NVL(burger_mayonnaise,0)) AS burger_mayonnaise,
-       SUM(NVL(burger_ketchup,0)) AS burger_ketchup,
-       SUM(NVL(tacos,0)) AS tacos,
-       SUM(NVL(galette_poulet,0)) AS galette_poulet,
-       SUM(NVL(kebab_mayonnaise,0)) AS kebab_mayonnaise,
-       SUM(NVL(kebab_ketchup,0)) AS kebab_ketchup,
-       SUM(NVL(frites,0)) AS frites,
-       SUM(NVL(cannette_coca,0)) AS cannette_coca,
-       SUM(NVL(cannette_orangina,0)) AS cannette_orangina
-FROM (
-    SELECT c.commande_id, cp.commande_uid, cp.produit_uid,
-           cp.commande_produit_quantite_vendue,
-           p.produit_nom
-    FROM commande_produit cp
-             LEFT JOIN produit p ON p.produit_uid = cp.produit_uid
-             LEFT JOIN commande c ON c.commande_uid = cp.commande_uid
-)
+       SUM(NVL(burger_mayonnaise, 0)) AS burger_mayonnaise,
+       SUM(NVL(burger_ketchup, 0))    AS burger_ketchup,
+       SUM(NVL(tacos, 0))             AS tacos,
+       SUM(NVL(galette_poulet, 0))    AS galette_poulet,
+       SUM(NVL(kebab_mayonnaise, 0))  AS kebab_mayonnaise,
+       SUM(NVL(kebab_ketchup, 0))     AS kebab_ketchup,
+       SUM(NVL(frites, 0))            AS frites,
+       SUM(NVL(cannette_coca, 0))     AS cannette_coca,
+       SUM(NVL(cannette_orangina, 0)) AS cannette_orangina
+FROM (SELECT c.commande_id,
+             cp.commande_uid,
+             cp.produit_uid,
+             cp.commande_produit_quantite_vendue,
+             p.produit_nom
+      FROM commande_produit cp
+               LEFT JOIN produit p ON p.produit_uid = cp.produit_uid
+               LEFT JOIN commande c ON c.commande_uid = cp.commande_uid)
     PIVOT (
     SUM(nvl(commande_produit_quantite_vendue, 0))
     FOR produit_nom IN (
@@ -885,8 +932,38 @@ FROM (
 GROUP BY commande_id;
 
 
+--------------------------------------
+-- Vue de la somme des ventes / achats
+--------------------------------------
+CREATE OR REPLACE VIEW vue_somme_ventes_achats AS
+SELECT v.commande_id,
+       v.vente,
+       a.achats,
+       ROUND(v.vente / a.achats, 2) AS ratio_vente
+FROM (SELECT commande.commande_id,
+             commande.commande_uid,
+             SUM(produit.produit_prix * commande_produit.commande_produit_quantite_vendue) AS vente
+      FROM commande
+               JOIN commande_produit ON commande.commande_uid = commande_produit.commande_uid
+               JOIN produit ON commande_produit.produit_uid = produit.produit_uid
+      GROUP BY commande.commande_uid, commande.commande_id) v
+         JOIN (SELECT commande.commande_uid,
+                      ROUND(SUM(achat.achat_prix_unite * commande_produit.commande_produit_quantite_vendue *
+                          produit_ingredient.produit_ingredient_quantite_utilise),2) AS achats
+               FROM commande
+                        JOIN commande_produit ON commande.commande_uid = commande_produit.commande_uid
+                        JOIN produit ON commande_produit.produit_uid = produit.produit_uid
+                        JOIN produit_ingredient ON produit.produit_uid = produit_ingredient.produit_uid
+                        JOIN ingredient ON produit_ingredient.ingredient_uid = ingredient.ingredient_uid
+                        JOIN fournisseur_ingredient ON ingredient.ingredient_uid = fournisseur_ingredient.ingredient_uid
+                        JOIN achat
+                             ON fournisseur_ingredient.fournisseur_ingredient_uid = achat.fournisseur_ingredient_uid
+               GROUP BY commande.commande_uid, commande.commande_id) a ON v.commande_uid = a.commande_uid
+ORDER BY v.commande_id;
+
+
 -- TODO:
 -- [X] Procédure de mise à jour des données clients en fournissant leur id
 -- [X] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
--- [ ] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
+-- [X] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
