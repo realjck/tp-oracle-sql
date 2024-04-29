@@ -11,6 +11,7 @@ END DBMS;
 ----------
 
 -- Procédure d'ajout d'un client
+--------------------------------
 CREATE OR REPLACE PROCEDURE insert_client(
     i_client_email IN VARCHAR2,
     i_client_nom IN VARCHAR2,
@@ -69,6 +70,7 @@ BEGIN
 END;
 
 -- Procédure de mise à jour d'un client
+---------------------------------------
 CREATE OR REPLACE PROCEDURE update_client(
     p_client_id           IN client.client_id%TYPE,
     p_client_email        IN client.client_email%TYPE,
@@ -110,6 +112,42 @@ END update_client;
 -- Appel de la mise à jour d'un client
 CALL update_client(9,'lopez.jose@gmail.com', 'Lopez', 'Jose', '0612345678',
                    '4 Rue des Jardins', '94000', 'Créteil');
+
+
+-- Procédure de suppression d'un client
+---------------------------------------
+CREATE OR REPLACE PROCEDURE supprimer_client (
+    p_client_id IN client.client_id%TYPE
+)
+    IS
+    v_rows_affected NUMBER;
+BEGIN
+    -- Vérifier le nombre de lignes affectées
+    SELECT COUNT(*)
+    INTO v_rows_affected
+    FROM client
+    WHERE client_id = p_client_id;
+
+    IF v_rows_affected = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Aucun client trouvé avec l''ID ' || p_client_id);
+    ELSE
+        -- Suppression des commandes liées au client
+        UPDATE commande
+        SET client_uid = NULL
+        WHERE client_uid = (SELECT client_uid FROM client WHERE client_id = p_client_id);
+
+        -- Suppression du client
+        DELETE FROM client
+        WHERE client_id = p_client_id;
+
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('Client ' || p_client_id || ' supprimé avec succès.');
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
+END supprimer_client;
 
 
 --------------
@@ -334,13 +372,22 @@ CREATE OR REPLACE PROCEDURE insert_commande (
     v_client_uid                VARCHAR2(255);
     v_produit_uid               VARCHAR2(255);
     v_commande_uid              VARCHAR2(255);
+    v_rows_found                NUMBER;
 BEGIN
 
     -- Récupérer l'UID du client en fonction de son email
     IF p_client_email IS NOT NULL THEN
-        SELECT client_uid INTO v_client_uid
+        SELECT COUNT(*)
+        INTO v_rows_found
         FROM client
         WHERE client_email = p_client_email;
+        IF v_rows_found = 0 THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Aucun client trouvé avec l''email ' || p_client_email);
+        ELSE
+            SELECT client_uid INTO v_client_uid
+            FROM client
+            WHERE client_email = p_client_email;
+        END IF;
     ELSE
         v_client_uid := NULL;
     END IF;
@@ -358,21 +405,22 @@ BEGIN
     WHERE commande_id = p_commande_id;
 
     -- Récupérer l'UID du produit en fonction de son nom
-    SELECT produit_uid INTO v_produit_uid
+    SELECT COUNT(*)
+    INTO v_rows_found
     FROM produit
     WHERE produit_nom = p_produit_nom;
-    IF v_produit_uid IS NULL THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Produit non trouvé pour le nom spécifié.');
+    IF v_rows_found = 0 THEN
+        RAISE_APPLICATION_ERROR(-20000, 'Produit non valide: ' || p_produit_nom);
+    ELSE
+        SELECT produit_uid INTO v_produit_uid
+        FROM produit
+        WHERE produit_nom = p_produit_nom;
     END IF;
 
     -- Insérer l'entrée dans la table commande_produit
     INSERT INTO commande_produit (commande_produit_uid, commande_produit_quantite_vendue, commande_uid, produit_uid)
     VALUES (SYS_GUID(), p_quantite_produit_vendue, v_commande_uid, v_produit_uid);
     COMMIT;
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        DBMS('Erreur: ' || SQLERRM);
 END insert_commande;
 
 -- Commandes
@@ -456,7 +504,7 @@ CALL insert_commande(11,'schmidt.hans@bouyguestelecom.fr',
                      TO_DATE('2024-04-27 12:55:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Cannette Coca', 1);
 
-CALL insert_commande(12,'lopez.jose@free.fr',
+CALL insert_commande(12,'lopez.jose@gmail.com',
                      TO_DATE('2024-04-27 13:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Kebab ketchup', 1);
 
@@ -839,6 +887,6 @@ GROUP BY commande_id;
 
 -- TODO:
 -- [X] Procédure de mise à jour des données clients en fournissant leur id
--- [ ] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
+-- [X] Procédure de suppression d'un client en fournissant son id (ses commandes ne sont pas supprimées, juste la référence client_uid des commandes passent à null)
 -- [ ] Vue horizontale à une ligne : total_prix_achat, total_prix_vente, ratio des 2 valeurs
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 0)
