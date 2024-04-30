@@ -154,6 +154,20 @@ EXCEPTION
 END supprimer_client;
 
 
+
+--------------------------------------
+-- Trigger d'ajout de point de fidélité au compte client après une commande
+--------------------------------------
+CREATE OR REPLACE TRIGGER ajout_point_fidelite_trigger
+    BEFORE INSERT OR UPDATE ON commande
+    FOR EACH ROW
+BEGIN
+    UPDATE client
+    SET client_point_carte = client_point_carte + 1
+    WHERE client_uid = :NEW.client_uid;
+END;
+
+
 --------------
 -- Ingrédients
 --------------
@@ -543,6 +557,13 @@ CALL insert_commande(15, 'popov.ivan@laposte.fr',
                      TO_DATE('2024-04-27 13:15:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Frites', 2);
 
+CALL insert_commande(16, 'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
+
+CALL insert_commande(17, 'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
 
 ----------------------------
 -- Création des fournisseurs
@@ -970,15 +991,8 @@ FROM (SELECT commande.commande_id,
 ORDER BY v.commande_id;
 
 
---------------------------------------
--- Trigger de commande de d'ingrédient quand le stock est inferieur à 20% (dans la VUE_INGREDIENT_STOCK)
---------------------------------------
---CREATE OR REPLACE TRIGGER stock_faible_trigger
---    BEFORE INSERT OR UPDATE ON COMMANDE_PRODUIT
---    FOR EACH ROW
---BEGIN
---    UPDATE INGREDIENT SET INGREDIENT_UNITE = 'ZZ' WHERE INGREDIENT_NOM = 'Orangina';
---END;
+
+
 
 -- TODO:
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 20%)
