@@ -5,6 +5,7 @@ BEGIN
     DBMS_OUTPUT.ENABLE(1000000);
     DBMS_OUTPUT.PUT_LINE(i_message);
 END DBMS;
+/
 
 ----------
 -- Clients
@@ -46,30 +47,29 @@ BEGIN
             0);
     COMMIT;
 END insert_client;
+/
 
 -- Appel de la procédure d'ajout des clients
-BEGIN
-    insert_client('jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
+CALL insert_client('jeanmartin@gmail.com', 'Martin', 'Jean', '0654123689',
                   '20 rue des Monts d''Or', '69009', 'Lyon');
-    insert_client('benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
+CALL insert_client('benali.khaled@orange.fr', 'Benali', 'Khaled', '0785321476',
                   '32 Avenue du Maréchal Leclerc', '75015', 'Paris');
-    insert_client('zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
+CALL insert_client('zhang.mei@free.fr', 'Zhang', 'Mei', '0643219876',
                   '12 Rue des Lilas', '33000', 'Bordeaux');
-    insert_client('garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
+CALL insert_client('garcia.pedro@sfr.fr', 'Garcia', 'Pedro', '0245678901',
                   '45 Rue Victor Hugo', '44000', 'Nantes');
-    insert_client('kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
+CALL insert_client('kowalski.anna@bouyguestelecom.fr', 'Kowalski', 'Anna', '0123456789',
                   '8 Rue Gambetta', '59000', 'Lille');
-    insert_client('nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
+CALL insert_client('nguyen.thi@numericable.fr', 'Nguyen', 'Thi', '0356789123',
                   '10 Place de la République', '13000', 'Marseille');
-    insert_client('popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
+CALL insert_client('popov.ivan@laposte.fr', 'Popov', 'Ivan', '0487654321',
                   '21 Boulevard des Alpes', '74000', 'Annecy');
-    insert_client('smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
+CALL insert_client('smith.mary@orange.fr', 'Singh', 'Anjali', '0598765432',
                   '3 Allée des Bleuets', '80000', 'Amiens');
-    insert_client('lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
+CALL insert_client('lopez.jose@free.fr', 'Lopez', 'Jose', '0612345678',
                   '4 Rue des Jardins', '94000', 'Créteil');
-    insert_client('schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
+CALL insert_client('schmidt.hans@bouyguestelecom.fr', 'Schmidt', 'Hans', '0834567890',
                   '6 Avenue du Général Leclerc', '67000', 'Strasbourg');
-END;
 
 -- Procédure de mise à jour d'un client
 ---------------------------------------
@@ -111,6 +111,7 @@ BEGIN
 
     COMMIT;
 END update_client;
+/
 
 -- Appel de la mise à jour d'un client
 CALL update_client(9, 'lopez.jose@gmail.com', 'Lopez', 'Jose', '0612345678',
@@ -152,7 +153,7 @@ EXCEPTION
         ROLLBACK;
         RAISE;
 END supprimer_client;
-
+/
 
 
 --------------------------------------
@@ -166,7 +167,7 @@ BEGIN
     SET client_point_carte = client_point_carte + 1
     WHERE client_uid = :NEW.client_uid;
 END;
-
+/
 
 --------------
 -- Ingrédients
@@ -228,6 +229,7 @@ BEGIN
             p_ingredient_nom,
             p_ingredient_unite);
 END insert_ingredient_par_type;
+/
 
 -- Ajout des ingrédients
 CALL insert_ingredient_par_type('Pita', 'Pain', 'Pc');
@@ -316,59 +318,64 @@ BEGIN
             v_ingredient_uid);
     COMMIT;
 END ajoute_ingredient_produit;
+/
 
 -- Ajout des recettes d'ingrédients pour les produits
 -----------------------------------------------------
+-- Pour info : SQL Developper provoque une erreur lors de valeurs décimales dans les appels de procédures pour les OS français.
+-- Changer le NILS séparateur de virgule en point dans les préférences ne résout pas ce problème.
+-- La solution trouvée est de passer les valeurs dans TO_NUMBER.
+-- Ce dysfonctionnement n'est pas présent sur les autres IDE comme Jetbrains.
 CALL ajoute_ingredient_produit('Buns', 'Burger mayonnaise', 1);
-CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Burger mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Burger mayonnaise', 0.15);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Burger mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Salade', 'Burger mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Burger mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Burger mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Boeuf', 'Burger mayonnaise', TO_NUMBER('0,15'));
+CALL ajoute_ingredient_produit('Mayonnaise', 'Burger mayonnaise', TO_NUMBER('0,025'));
 
 CALL ajoute_ingredient_produit('Buns', 'Burger ketchup', 1);
-CALL ajoute_ingredient_produit('Salade', 'Burger ketchup', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Burger ketchup', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Burger ketchup', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Burger ketchup', 0.15);
-CALL ajoute_ingredient_produit('Ketchup', 'Burger ketchup', 0.025);
+CALL ajoute_ingredient_produit('Salade', 'Burger ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Burger ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Burger ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Boeuf', 'Burger ketchup', TO_NUMBER('0,15'));
+CALL ajoute_ingredient_produit('Ketchup', 'Burger ketchup', TO_NUMBER('0,025'));
 
 CALL ajoute_ingredient_produit('Galette', 'Tacos', 1);
-CALL ajoute_ingredient_produit('Pommes de terre', 'Tacos', 0.1);
-CALL ajoute_ingredient_produit('Salade', 'Tacos', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Tacos', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Tacos', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Tacos', 0.2);
-CALL ajoute_ingredient_produit('Poulet', 'Tacos', 0.2);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', 0.025);
-CALL ajoute_ingredient_produit('Ketchup', 'Tacos', 0.025);
+CALL ajoute_ingredient_produit('Pommes de terre', 'Tacos', TO_NUMBER('0,1'));
+CALL ajoute_ingredient_produit('Salade', 'Tacos', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Tacos', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Tacos', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Boeuf', 'Tacos', TO_NUMBER('0,2'));
+CALL ajoute_ingredient_produit('Poulet', 'Tacos', TO_NUMBER('0,2'));
+CALL ajoute_ingredient_produit('Mayonnaise', 'Tacos', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Ketchup', 'Tacos', TO_NUMBER('0,025'));
 
 CALL ajoute_ingredient_produit('Galette', 'Galette poulet', 1);
-CALL ajoute_ingredient_produit('Salade', 'Galette poulet', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Galette poulet', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Galette poulet', 0.025);
-CALL ajoute_ingredient_produit('Poulet', 'Galette poulet', 0.25);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Galette poulet', 0.025);
+CALL ajoute_ingredient_produit('Salade', 'Galette poulet', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Galette poulet', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Galette poulet', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Poulet', 'Galette poulet', TO_NUMBER('0,25'));
+CALL ajoute_ingredient_produit('Mayonnaise', 'Galette poulet', TO_NUMBER('0,025'));
 
 CALL ajoute_ingredient_produit('Pita', 'Kebab mayonnaise', 1);
-CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', 0.1);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', 0.1);
-CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', 0.025);
+CALL ajoute_ingredient_produit('Salade', 'Kebab mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Kebab mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Kebab mayonnaise', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab mayonnaise', TO_NUMBER('0,1'));
+CALL ajoute_ingredient_produit('Poulet', 'Kebab mayonnaise', TO_NUMBER('0,1'));
+CALL ajoute_ingredient_produit('Mayonnaise', 'Kebab mayonnaise', TO_NUMBER('0,025'));
 
 CALL ajoute_ingredient_produit('Pita', 'Kebab ketchup', 1);
-CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', 0.025);
-CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', 0.025);
-CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', 0.025);
-CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', 0.1);
-CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', 0.1);
-CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', 0.025);
+CALL ajoute_ingredient_produit('Salade', 'Kebab ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Tomate', 'Kebab ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Oignons', 'Kebab ketchup', TO_NUMBER('0,025'));
+CALL ajoute_ingredient_produit('Boeuf', 'Kebab ketchup', TO_NUMBER('0,1'));
+CALL ajoute_ingredient_produit('Poulet', 'Kebab ketchup', TO_NUMBER('0,1'));
+CALL ajoute_ingredient_produit('Ketchup', 'Kebab ketchup', TO_NUMBER('0,025'));
 
-CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', 0.15);
-CALL ajoute_ingredient_produit('Huile', 'Frites', 0.020);
-CALL ajoute_ingredient_produit('Sel', 'Frites', 0.002);
+CALL ajoute_ingredient_produit('Pommes de terre', 'Frites', TO_NUMBER('0,15'));
+CALL ajoute_ingredient_produit('Huile', 'Frites', TO_NUMBER('0,020'));
+CALL ajoute_ingredient_produit('Sel', 'Frites', TO_NUMBER('0,002'));
 
 CALL ajoute_ingredient_produit('Coca', 'Cannette Coca', 1);
 
@@ -446,6 +453,7 @@ BEGIN
     VALUES (SYS_GUID(), p_quantite_produit_vendue, v_commande_uid, v_produit_uid);
     COMMIT;
 END insert_commande;
+/
 
 -- Insertion des commandes
 --------------------------
@@ -624,9 +632,10 @@ BEGIN
             SYSDATE);
     COMMIT;
 END insert_fournisseur;
+/
 
 -- Test d'appel de la procédure, insertion des fournisseurs
-BEGIN
+CALL
     insert_fournisseur(
             p_fournisseur_nom => 'Le grand marché',
             p_fournisseur_email => 'Le_grand_marche@email.com',
@@ -635,21 +644,17 @@ BEGIN
             p_fournisseur_cp => '69001',
             p_fournisseur_ville => 'Lyon'
     );
-END;
 
-BEGIN
-    insert_fournisseur(
-            'Le champs des possible'
-        , 'lechampdespossible@hotmail.fr'
-        , '0643545625'
-        , '2 chemin de l''alouette'
+
+CALL insert_fournisseur('Le champs des possible' , 'lechampdespossible@hotmail.fr'
+        , '0643545625', '2 chemin de l''alouette'
         , '42100', 'Saint Etienne');
-END;
+
 CALL insert_fournisseur('Le fermier local', 'fermierlocal@free.fr',
                         '0625485621', '4 rue du marché',
                         '69100', 'Villeurbanne');
 
-CALL insert_fournisseur('Miam Miam & Compagnie', 'miametcie@lycos.fr',
+CALL insert_fournisseur('Miam et Cie', 'miametcie@lycos.fr',
                         '0625434321', '453 rue plantée',
                         '69101', 'Lyon');
 
@@ -701,6 +706,7 @@ EXCEPTION
         ROLLBACK;
         DBMS('Erreur: ' || SQLERRM);
 END insert_fournisseur_ingredient;
+/
 
 -- Insertion de valeurs dans la table fournisseur_ingredients
 CALL insert_fournisseur_ingredient('Le grand marché', 'Pita');
@@ -710,14 +716,14 @@ CALL insert_fournisseur_ingredient('Le grand marché', 'Salade');
 CALL insert_fournisseur_ingredient('Le grand marché', 'Tomate');
 CALL insert_fournisseur_ingredient('Le fermier local', 'Oignons');
 CALL insert_fournisseur_ingredient('Le fermier local', 'Pommes de terre');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Pita');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Galette');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Buns');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Salade');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Ketchup');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Mayonnaise');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Huile');
-CALL insert_fournisseur_ingredient('Miam Miam & Compagnie', 'Sel');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Pita');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Galette');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Buns');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Salade');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Ketchup');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Mayonnaise');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Huile');
+CALL insert_fournisseur_ingredient('Miam et Cie', 'Sel');
 CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Boeuf');
 CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Poulet');
 CALL insert_fournisseur_ingredient('L''agriculteur de demain', 'Ketchup');
@@ -762,23 +768,24 @@ BEGIN
 
     COMMIT;
 END insert_achat;
+/
 
 -- Insertion des achats
-CALL insert_achat('Le grand marché', 'Pita', 20, 0.6);
-CALL insert_achat('Le grand marché', 'Galette', 30, 0.4);
-CALL insert_achat('Miam Miam & Compagnie', 'Buns', 30, 1.2);
-CALL insert_achat('Le grand marché', 'Salade', 5, 2.50);
-CALL insert_achat('Le grand marché', 'Tomate', 5, 3.20);
-CALL insert_achat('Le fermier local', 'Oignons', 5, 2.80);
-CALL insert_achat('Le fermier local', 'Pommes de terre', 20, 1.10);
-CALL insert_achat('L''agriculteur de demain', 'Boeuf', 10, 25.80);
-CALL insert_achat('L''agriculteur de demain', 'Poulet', 8, 18.50);
-CALL insert_achat('Miam Miam & Compagnie', 'Ketchup', 3, 3.50);
-CALL insert_achat('Miam Miam & Compagnie', 'Mayonnaise', 3, 3.20);
-CALL insert_achat('Miam Miam & Compagnie', 'Huile', 8, 2.80);
-CALL insert_achat('Miam Miam & Compagnie', 'Sel', 2, 0.80);
-CALL insert_achat('Aqua Soda', 'Coca', 12, 0.40);
-CALL insert_achat('Aqua Soda', 'Orangina', 12, 0.45);
+CALL insert_achat('Le grand marché', 'Pita', 20, TO_NUMBER('0,6'));
+CALL insert_achat('Le grand marché', 'Galette', 30, TO_NUMBER('0,4'));
+CALL insert_achat('Miam et Cie', 'Buns', 30, TO_NUMBER('1,2'));
+CALL insert_achat('Le grand marché', 'Salade', 5, TO_NUMBER('2,50'));
+CALL insert_achat('Le grand marché', 'Tomate', 5, TO_NUMBER('3,20'));
+CALL insert_achat('Le fermier local', 'Oignons', 5, TO_NUMBER('2,80'));
+CALL insert_achat('Le fermier local', 'Pommes de terre', 20, TO_NUMBER('1,10'));
+CALL insert_achat('L''agriculteur de demain', 'Boeuf', 10, TO_NUMBER('25,80'));
+CALL insert_achat('L''agriculteur de demain', 'Poulet', 8, TO_NUMBER('18,50'));
+CALL insert_achat('Miam et Cie', 'Ketchup', 3, TO_NUMBER('3,50'));
+CALL insert_achat('Miam et Cie', 'Mayonnaise', 3, TO_NUMBER('3,20'));
+CALL insert_achat('Miam et Cie', 'Huile', 8, TO_NUMBER('2,80'));
+CALL insert_achat('Miam et Cie', 'Sel', 2, TO_NUMBER('0,80'));
+CALL insert_achat('Aqua Soda', 'Coca', 12, TO_NUMBER('0,40'));
+CALL insert_achat('Aqua Soda', 'Orangina', 12, TO_NUMBER('0,45'));
 
 
 --------------------
@@ -1012,10 +1019,3 @@ FROM (SELECT commande.commande_id,
                              ON fournisseur_ingredient.fournisseur_ingredient_uid = achat.fournisseur_ingredient_uid
                GROUP BY commande.commande_uid, commande.commande_id) a ON v.commande_uid = a.commande_uid
 ORDER BY v.commande_id;
-
-
-
-
-
--- TODO:
--- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 20%)

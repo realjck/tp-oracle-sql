@@ -7,7 +7,7 @@ BEGIN
             END IF;
         END LOOP;
 END;
-
+/
 -- Supprimer les séquences si elles existent
 BEGIN
     FOR cur_rec IN (SELECT sequence_name FROM user_sequences)
@@ -17,7 +17,7 @@ BEGIN
             END IF;
         END LOOP;
 END;
-
+/
 -- Supprimer les procédures si elles existent
 BEGIN
     FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE')
@@ -27,7 +27,7 @@ BEGIN
             END IF;
         END LOOP;
 END;
-
+/
 -- Supprimer les vues si elles existent
 BEGIN
     FOR cur_rec IN (SELECT view_name FROM user_views)
@@ -37,7 +37,7 @@ BEGIN
             END IF;
         END LOOP;
 END;
-
+/
 
 ------------------------
 -- Creation table client
