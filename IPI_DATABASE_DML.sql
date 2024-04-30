@@ -558,12 +558,35 @@ CALL insert_commande(15, 'popov.ivan@laposte.fr',
                      'Frites', 2);
 
 CALL insert_commande(16, 'jeanmartin@gmail.com',
-                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     TO_DATE('2024-04-28 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger mayonnaise', 1);
 
 CALL insert_commande(17, 'jeanmartin@gmail.com',
-                     TO_DATE('2024-04-27 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     TO_DATE('2024-04-28 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),
                      'Burger mayonnaise', 1);
+
+CALL insert_commande(18, 'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-28 18:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
+CALL insert_commande(18, 'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-28 18:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 1);
+CALL insert_commande(18, 'kowalski.anna@bouyguestelecom.fr',
+                     TO_DATE('2024-04-28 18:40:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Cannette Orangina', 1);
+
+CALL insert_commande(19, 'benali.khaled@orange.fr',
+                     TO_DATE('2024-04-28 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Tacos', 1);
+CALL insert_commande(19, 'benali.khaled@orange.fr',
+                     TO_DATE('2024-04-28 12:15:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Frites', 1);
+
+CALL insert_commande(20, 'jeanmartin@gmail.com',
+                     TO_DATE('2024-04-29 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+                     'Burger mayonnaise', 1);
+
+
 
 ----------------------------
 -- Création des fournisseurs
