@@ -31,7 +31,8 @@ BEGIN
                         client_adresse,
                         client_cp,
                         client_ville,
-                        client_date_creation)
+                        client_date_creation,
+                        client_point_carte)
     VALUES (SYS_GUID(),
             SEQ_ID_CLIENT.nextval,
             i_client_email,
@@ -41,7 +42,8 @@ BEGIN
             i_client_adresse,
             i_client_cp,
             i_client_ville,
-            SYSDATE);
+            SYSDATE,
+            0);
     COMMIT;
 END insert_client;
 
@@ -967,6 +969,16 @@ FROM (SELECT commande.commande_id,
                GROUP BY commande.commande_uid, commande.commande_id) a ON v.commande_uid = a.commande_uid
 ORDER BY v.commande_id;
 
+
+--------------------------------------
+-- Trigger de commande de d'ingrédient quand le stock est inferieur à 20% (dans la VUE_INGREDIENT_STOCK)
+--------------------------------------
+--CREATE OR REPLACE TRIGGER stock_faible_trigger
+--    BEFORE INSERT OR UPDATE ON COMMANDE_PRODUIT
+--    FOR EACH ROW
+--BEGIN
+--    UPDATE INGREDIENT SET INGREDIENT_UNITE = 'ZZ' WHERE INGREDIENT_NOM = 'Orangina';
+--END;
 
 -- TODO:
 -- [ ] Trigger (ex.: réalise un achat produit lorsque le stock < 20%)

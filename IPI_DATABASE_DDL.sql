@@ -53,7 +53,8 @@ CREATE TABLE client
     client_adresse       VARCHAR2(255),
     client_cp            VARCHAR2(255),
     client_ville         VARCHAR2(255),
-    client_date_creation DATE
+    client_date_creation DATE,
+    client_point_carte   NUMBER
 );
 
 -- Création sequence
